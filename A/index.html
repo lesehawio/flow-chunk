@@ -1,43 +1,1339 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html dir="rtl" lang="fa">
 <head>
-<meta charset="UTF-8">
-<title>PLOS-SAPSE Prototype</title>
-<style>
-body{font-family:sans-serif;max-width:900px;margin:auto;padding:20px;line-height:1.8}
-.card{border:1px solid #ccc;border-radius:12px;padding:16px;margin:12px 0}
-button{padding:10px 16px;margin:6px;cursor:pointer}
-.result{margin-top:20px;padding:15px;border-radius:10px;border:1px solid #aaa}
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>PLOS-SAPSE · سیستم تشخیص مقاومت رفتاری</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================================
+           RESET & VARIABLES — تم روشن با افکت‌های پس‌زمینه
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --hl-red: #e63946;
+            --hl-orange: #f77f00;
+            --hl-green: #2a9d8f;
+            --hl-blue: #3a86ff;
+
+            --bg-page: #f5f0ff;
+            --glass: rgba(255, 255, 255, 0.55);
+            --glass-border: rgba(200, 180, 220, 0.2);
+            --shadow: 0 20px 45px -12px rgba(80, 40, 120, 0.08);
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-light: #2d2d44;
+        }
+
+        body {
+            font-family: 'Inter', 'Vazirmatn', system-ui, sans-serif;
+            min-height: 100vh;
+            background: var(--bg-page);
+            overflow-x: hidden;
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ============================================================
+           پس‌زمینه با افکت‌های محو و متحرک (Glassy Gradient Orbs)
+           ============================================================ */
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: linear-gradient(135deg, #f8f4ff 0%, #f0eaff 30%, #f5f0ff 60%, #faf0ff 100%);
+        }
+
+        /* نقطه‌های رنگی محو با انیمیشن شناور */
+        .bg-effects .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            animation: floatOrb 22s infinite alternate ease-in-out;
+            will-change: transform;
+        }
+
+        .bg-effects .orb:nth-child(1) {
+            width: 550px;
+            height: 550px;
+            top: -200px;
+            right: -150px;
+            background: var(--hl-red);
+            opacity: 0.12;
+            animation-duration: 25s;
+        }
+        .bg-effects .orb:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            bottom: -200px;
+            left: -150px;
+            background: var(--hl-blue);
+            opacity: 0.10;
+            animation-duration: 30s;
+            animation-delay: 2s;
+        }
+        .bg-effects .orb:nth-child(3) {
+            width: 450px;
+            height: 450px;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--hl-green);
+            opacity: 0.08;
+            animation-duration: 28s;
+            animation-delay: 4s;
+        }
+        .bg-effects .orb:nth-child(4) {
+            width: 350px;
+            height: 350px;
+            top: 20%;
+            right: 10%;
+            background: var(--hl-orange);
+            opacity: 0.10;
+            animation-duration: 26s;
+            animation-delay: 1s;
+        }
+        .bg-effects .orb:nth-child(5) {
+            width: 300px;
+            height: 300px;
+            bottom: 30%;
+            left: 30%;
+            background: var(--hl-purple, #9b59b6);
+            opacity: 0.06;
+            animation-duration: 32s;
+            animation-delay: 3s;
+        }
+
+        @keyframes floatOrb {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            25% {
+                transform: translate(60px, -40px) scale(1.08);
+            }
+            50% {
+                transform: translate(-30px, 50px) scale(0.92);
+            }
+            75% {
+                transform: translate(40px, 30px) scale(1.05);
+            }
+            100% {
+                transform: translate(-20px, -30px) scale(0.98);
+            }
+        }
+
+        /* افکت نورانی متحرک (شبکه یا خطوط) */
+        .bg-effects .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(58, 134, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(58, 134, 255, 0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+            animation: gridPulse 15s ease-in-out infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            0% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.02);
+            }
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+        }
+
+        /* ============================================================
+           بخش بالایی: برندینگ با لوگو در مرکز
+           ============================================================ */
+        .brand-section {
+            padding: 2.5rem 1.5rem 1.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-section .logo-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            position: relative;
+        }
+
+        .brand-section .logo-wrapper .logo-img {
+            max-width: 260px;
+            width: 70%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 8px 30px rgba(80, 40, 120, 0.06));
+            transition: all 0.4s ease;
+        }
+
+        .brand-section .logo-wrapper .logo-img:hover {
+            filter: drop-shadow(0 12px 40px rgba(80, 40, 120, 0.12));
+            transform: scale(1.02);
+        }
+
+        /* حلقه نورانی دور لوگو */
+        .brand-section .logo-wrapper .glow-ring {
+            position: absolute;
+            inset: -12px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--hl-red), var(--hl-orange), var(--hl-green), var(--hl-blue), var(--hl-red));
+            opacity: 0.12;
+            filter: blur(25px);
+            animation: spinGlow 12s linear infinite;
+            z-index: -1;
+            width: calc(100% + 24px);
+            height: calc(100% + 24px);
+        }
+
+        @keyframes spinGlow {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .brand-section .subtitle {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 4px;
+            margin-top: 0.2rem;
+        }
+
+        .brand-section .tagline {
+            max-width: 600px;
+            margin: 0.6rem auto 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            line-height: 1.8;
+            font-weight: 400;
+        }
+
+        .brand-section .tagline strong {
+            color: var(--text-primary);
+            opacity: 0.9;
+            font-weight: 600;
+        }
+
+        .brand-section .color-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 0.8rem;
+        }
+        .brand-section .color-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+        .brand-section .color-dots span:nth-child(1) { background: var(--hl-red); }
+        .brand-section .color-dots span:nth-child(2) { background: var(--hl-orange); }
+        .brand-section .color-dots span:nth-child(3) { background: var(--hl-green); }
+        .brand-section .color-dots span:nth-child(4) { background: var(--hl-blue); }
+
+        /* خط جداکننده با افکت */
+        .divider-line {
+            max-width: 700px;
+            margin: 0.8rem auto 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(80, 40, 120, 0.1), var(--hl-blue), rgba(80, 40, 120, 0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmerLine 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmerLine {
+            0%, 100% {
+                background-position: -200% 0;
+            }
+            50% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* ============================================================
+           بخش پایینی: تست
+           ============================================================ */
+        .test-section {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0.5rem 1.2rem 3rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* کارت سوال با افکت شیشه‌ای */
+        .question-card {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 2.4rem;
+            padding: 2.2rem 2.4rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            min-height: 320px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--hl-red), var(--hl-orange), var(--hl-green), var(--hl-blue));
+            opacity: 0.5;
+            background-size: 300% 100%;
+            animation: shimmerBar 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmerBar {
+            0%, 100% {
+                background-position: 0% 0;
+            }
+            50% {
+                background-position: 100% 0;
+            }
+        }
+
+        /* افکت نورانی پشت کارت */
+        .question-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, rgba(58, 134, 255, 0.03), transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .question-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .question-card .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+        }
+
+        .question-card .q-number {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            opacity: 0.6;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .question-card .q-progress {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .question-card .q-progress .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(80, 40, 120, 0.12);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .question-card .q-progress .dot.active {
+            background: var(--hl-green);
+            box-shadow: 0 0 16px rgba(42, 157, 143, 0.3);
+            animation: dotPulse 1.2s ease-in-out infinite;
+        }
+
+        .question-card .q-progress .dot.done {
+            background: rgba(80, 40, 120, 0.25);
+        }
+
+        @keyframes dotPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.7;
+            }
+        }
+
+        .question-card .q-text {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin-bottom: 0.4rem;
+            flex: 1;
+        }
+
+        .question-card .q-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        /* گزینه‌ها */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.6rem;
+            margin-top: auto;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(200, 180, 220, 0.15);
+            border-radius: 1.2rem;
+            padding: 0.9rem 1.2rem;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-family: inherit;
+            line-height: 1.4;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-btn .emoji {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(80, 40, 120, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(80, 40, 120, 0.04);
+        }
+
+        .option-btn:active {
+            transform: scale(0.97);
+        }
+
+        .option-btn.selected {
+            border-color: var(--hl-green);
+            background: rgba(42, 157, 143, 0.08);
+            box-shadow: 0 0 30px rgba(42, 157, 143, 0.06);
+        }
+
+        .option-btn .check-mark {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%) scale(0);
+            color: var(--hl-green);
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .option-btn.selected .check-mark {
+            transform: translateY(-50%) scale(1);
+        }
+
+        /* انیمیشن سوال */
+        .question-card.slide-out {
+            opacity: 0;
+            transform: translateX(-20px) scale(0.97);
+        }
+        .question-card.slide-in {
+            animation: slideIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(25px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+
+        /* ============================================================
+           نتیجه
+           ============================================================ */
+        .result-card {
+            background: var(--glass);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 2.4rem;
+            padding: 2.4rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            display: none;
+            animation: slideIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card.visible {
+            display: block;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--hl-red), var(--hl-orange), var(--hl-green), var(--hl-blue));
+            opacity: 0.5;
+            background-size: 300% 100%;
+            animation: shimmerBar 3s ease-in-out infinite;
+        }
+
+        .result-card .r-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .result-card .r-badge {
+            display: inline-block;
+            padding: 0.3rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .badge-red { background: rgba(230, 57, 70, 0.08); color: var(--hl-red); border: 1px solid rgba(230, 57, 70, 0.12); }
+        .badge-orange { background: rgba(247, 127, 0, 0.08); color: var(--hl-orange); border: 1px solid rgba(247, 127, 0, 0.12); }
+        .badge-green { background: rgba(42, 157, 143, 0.08); color: var(--hl-green); border: 1px solid rgba(42, 157, 143, 0.12); }
+        .badge-blue { background: rgba(58, 134, 255, 0.08); color: var(--hl-blue); border: 1px solid rgba(58, 134, 255, 0.12); }
+        .badge-purple { background: rgba(156, 39, 176, 0.08); color: #7c3a8a; border: 1px solid rgba(156, 39, 176, 0.12); }
+
+        .result-card .r-section {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.4rem;
+            margin-top: 0.8rem;
+            border: 1px solid rgba(200, 180, 220, 0.08);
+            backdrop-filter: blur(4px);
+        }
+
+        .result-card .r-section h4 {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            opacity: 0.7;
+        }
+
+        .result-card .r-section p {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            opacity: 0.85;
+        }
+
+        .result-card .r-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .result-card .r-section ul li {
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+            opacity: 0.7;
+            border-bottom: 1px solid rgba(200, 180, 220, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .result-card .r-section ul li:last-child {
+            border-bottom: none;
+        }
+        .result-card .r-section ul li::before {
+            content: "✦";
+            color: var(--hl-orange);
+            font-size: 0.7rem;
+        }
+
+        .result-card .r-section.intervention {
+            border-left: 3px solid var(--hl-green);
+        }
+        .result-card .r-section.identity {
+            border-left: 3px solid var(--hl-blue);
+        }
+
+        .result-card .r-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 0.7rem 2rem;
+            border: none;
+            border-radius: 3rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: rgba(80, 40, 120, 0.04);
+            color: var(--text-primary);
+            border: 1px solid rgba(80, 40, 120, 0.08);
+        }
+        .btn:hover {
+            background: rgba(80, 40, 120, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--hl-green), var(--hl-blue));
+            border: none;
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(42, 157, 143, 0.15);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 12px 40px rgba(42, 157, 143, 0.25);
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 768px) {
+            .brand-section .logo-wrapper .logo-img {
+                max-width: 180px;
+            }
+            .brand-section .subtitle {
+                font-size: 0.8rem;
+                letter-spacing: 2px;
+            }
+            .brand-section .tagline {
+                font-size: 0.8rem;
+            }
+            .question-card {
+                padding: 1.6rem 1.4rem;
+                border-radius: 1.8rem;
+                min-height: 280px;
+            }
+            .question-card .q-text {
+                font-size: 1.05rem;
+            }
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 0.4rem;
+            }
+            .option-btn {
+                padding: 0.7rem 1rem;
+                font-size: 0.8rem;
+                border-radius: 1rem;
+            }
+            .option-btn .emoji {
+                font-size: 1rem;
+            }
+            .result-card {
+                padding: 1.6rem;
+                border-radius: 1.8rem;
+            }
+            .result-card .r-title {
+                font-size: 1.3rem;
+            }
+            .bg-effects .orb:nth-child(1) {
+                width: 300px;
+                height: 300px;
+                top: -100px;
+                right: -100px;
+            }
+            .bg-effects .orb:nth-child(2) {
+                width: 250px;
+                height: 250px;
+                bottom: -80px;
+                left: -80px;
+            }
+            .bg-effects .orb:nth-child(3) {
+                width: 200px;
+                height: 200px;
+            }
+            .bg-effects .orb:nth-child(4) {
+                width: 150px;
+                height: 150px;
+            }
+            .bg-effects .orb:nth-child(5) {
+                width: 120px;
+                height: 120px;
+            }
+            .test-section {
+                padding: 0 0.8rem 2rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .brand-section .logo-wrapper .logo-img {
+                max-width: 140px;
+            }
+            .question-card {
+                padding: 1.2rem 1rem;
+                border-radius: 1.4rem;
+                min-height: 240px;
+            }
+            .question-card .q-text {
+                font-size: 0.9rem;
+            }
+            .option-btn {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.75rem;
+                gap: 0.5rem;
+            }
+            .option-btn .emoji {
+                font-size: 0.9rem;
+            }
+            .result-card .r-section {
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<h1>PLOS-SAPSE Prototype</h1>
-<p>این سیستم زبان آموزش نمی‌دهد؛ فقط تشخیص می‌دهد چرا عمل اتفاق نیفتاد.</p>
 
-<div class="card">
-<h3>الان چرا FlowChank را باز نکردی؟</h3>
-<button onclick="showResult('physical')">حوصله برداشتن گوشی را نداشتم</button>
-<button onclick="showResult('cognitive')">نمی‌دانستم از کجا شروع کنم</button>
-<button onclick="showResult('energy')">خسته بودم</button>
-<button onclick="showResult('identity')">حس کردم متعلق به من نیست</button>
-<button onclick="showResult('decision')">گفتم بعداً انجام می‌دهم</button>
-</div>
+    <!-- ============================================================
+    پس‌زمینه با افکت‌های محو و متحرک
+    ============================================================ -->
+    <div class="bg-effects">
+        <!-- توپ‌های رنگی محو -->
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <!-- افکت خطوط شبکه -->
+        <div class="grid-overlay"></div>
+    </div>
 
-<div id="output" class="result">یک گزینه را انتخاب کن.</div>
+    <!-- ============================================================
+    بخش بالایی: برندینگ با لوگو در مرکز
+    ============================================================ -->
+    <header class="brand-section">
+        <div class="logo-wrapper">
+            <div class="glow-ring"></div>
+            <img class="logo-img"
+                 src="https://uploadkon.ir/uploads/6fab24_26-.png"
+                 alt="FlowChank Plus Logo"
+                 onerror="this.src='https://placehold.co/300x100/7a4cbf/fff?text=FlowChank+Plus'"
+                 loading="lazy" />
+        </div>
+        <div class="subtitle">✦ سیستم تشخیص مقاومت رفتاری ✦</div>
+        <p class="tagline">
+            <strong>FlowChank Plus</strong> · نه آموزش زبان، نه گرامر · فقط یک سوال:
+            <br />
+            «چرا با وجود اینکه می‌خواهی از فلوچانک استفاده کنی، این کار را نمی‌کنی؟»
+        </p>
+        <div class="color-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="divider-line"></div>
+    </header>
 
-<script>
-function showResult(type){
-const data={
-physical:["اصطکاک فیزیکی","هزینه شروع زیاد شده.","فقط گوشی را بردار.","فقط صفحه را روشن کن.","فقط FlowChank را باز کن."],
-cognitive:["اصطکاک شناختی","شروع مبهم است.","فقط آخرین دسته استفاده شده را باز کن.","فقط یک جمله را ببین."],
-energy:["اصطکاک انرژی","مغز در حالت صرفه‌جویی است.","فقط ۲۰ ثانیه استفاده کن.","فقط گوش بده."],
-identity:["اصطکاک هویتی","سیستم هنوز بخشی از هویت نیست.","هدفت را از یادگیری به زندگی با زبان تغییر بده."],
-decision:["اصطکاک تصمیم","تصمیم‌گیری خودش هزینه دارد.","قانون ثابت بساز: هر بار گوشی را باز کردم FlowChank هم باز می‌شود."]
-};
-let d=data[type];
-document.getElementById("output").innerHTML=
-"<h2>"+d[0]+"</h2><p>"+d[1]+"</p><ul>"+d.slice(2).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
-}
-</script>
+    <!-- ============================================================
+    بخش پایینی: تست مرحله‌به‌مرحله
+    ============================================================ -->
+    <main class="test-section" id="testSection">
+
+        <!-- کارت سوال -->
+        <div class="question-card slide-in" id="questionCard">
+            <div class="q-header">
+                <span class="q-number" id="qNumber">سوال ۱ از ۱۲</span>
+                <div class="q-progress" id="qProgress"></div>
+            </div>
+            <div class="q-text" id="qText">بارگذاری...</div>
+            <div class="q-desc" id="qDesc"></div>
+            <div class="options-grid" id="optionsGrid"></div>
+        </div>
+
+        <!-- کارت نتیجه -->
+        <div class="result-card" id="resultCard">
+            <div class="r-title" id="rTitle"></div>
+            <div class="r-badge" id="rBadge"></div>
+
+            <div class="r-section">
+                <h4>🎯 تشخیص اصلی</h4>
+                <p id="rDiagnosis"></p>
+            </div>
+
+            <div class="r-section">
+                <h4>📊 تحلیل مقاومت</h4>
+                <ul id="rResistance"></ul>
+            </div>
+
+            <div class="r-section intervention">
+                <h4>💊 نسخه عملی</h4>
+                <p id="rIntervention"></p>
+            </div>
+
+            <div class="r-section identity">
+                <h4>🧬 بازتعریف هویت</h4>
+                <p id="rIdentity"></p>
+            </div>
+
+            <div class="r-actions">
+                <button class="btn btn-primary" id="resetBtn">🔄 شروع مجدد</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // ============================================================
+        // داده‌های سوالات (۱۲ سوال)
+        // ============================================================
+        const questions = [{
+            id: 'energy',
+            text: 'الان سطح انرژی بدنی و ذهنی تو چقدر است؟',
+            desc: 'این مهم‌ترین عامل شروع هر رفتاری است.',
+            options: [
+                { value: 'high', label: 'انرژی بالا — آماده‌ام', emoji: '⚡' },
+                { value: 'medium', label: 'انرژی متوسط — می‌تونم شروع کنم', emoji: '🌤️' },
+                { value: 'low', label: 'انرژی پایین — خسته‌ام', emoji: '😴' },
+                { value: 'zero', label: 'کاملاً فرسوده — هیچ کاری نمی‌تونم', emoji: '🪫' }
+            ]
+        }, {
+            id: 'friction',
+            text: 'دقیقاً کدام بخش استفاده از FlowChank برایت سخت‌ترین است؟',
+            desc: 'اصطکاک فیزیکی و ذهنی را شناسایی کن.',
+            options: [
+                { value: 'phone', label: 'برداشتن گوشی و باز کردن قفل', emoji: '📱' },
+                { value: 'app', label: 'پیدا کردن برنامه بین اپ‌ها', emoji: '🔍' },
+                { value: 'category', label: 'انتخاب دسته یا موضوع', emoji: '📂' },
+                { value: 'phrase', label: 'پیدا کردن جمله مناسب', emoji: '💬' },
+                { value: 'start', label: 'همین اول شروع کردن', emoji: '🚀' },
+                { value: 'none', label: 'هیچ‌کدام — اصطکاک خاصی ندارم', emoji: '✅' }
+            ]
+        }, {
+            id: 'cognitive',
+            text: 'چه افکاری در ذهن تو وجود دارد که مانع استفاده می‌شود؟',
+            desc: 'مقاومت‌های شناختی را بررسی کن.',
+            options: [
+                { value: 'perfect', label: 'باید کامل و بی‌نقص انجامش بدم', emoji: '🎯' },
+                { value: 'later', label: 'بعداً انجامش می‌دم (وقت بهتر)', emoji: '⏰' },
+                { value: 'useless', label: 'الان فایده‌ای ندارد', emoji: '🤷' },
+                { value: 'hard', label: 'خیلی سخت و زمان‌بر است', emoji: '😰' },
+                { value: 'forget', label: 'اصلاً یادم می‌رود', emoji: '😶' },
+                { value: 'none', label: 'هیچ فکر منفی‌ای ندارم', emoji: '🧘' }
+            ]
+        }, {
+            id: 'emotional',
+            text: 'چه احساساتی در مورد FlowChank داری؟',
+            desc: 'مقاومت‌های هیجانی را کشف کن.',
+            options: [
+                { value: 'fear', label: 'از اشتباه کردن می‌ترسم', emoji: '😨' },
+                { value: 'shame', label: 'از صدای خودم خجالت می‌کشم', emoji: '😳' },
+                { value: 'fail', label: 'احساس شکست و ناامیدی دارم', emoji: '😔' },
+                { value: 'stress', label: 'استرس و فشار زیادی دارم', emoji: '😫' },
+                { value: 'bored', label: 'خسته و بی‌حوصله‌ام', emoji: '🥱' },
+                { value: 'none', label: 'احساس منفی ندارم', emoji: '😊' }
+            ]
+        }, {
+            id: 'decision',
+            text: 'چند انتخاب و تصمیم پیش روی توست؟',
+            desc: 'بار تصمیم‌گیری را اندازه بگیر.',
+            options: [
+                { value: 'many', label: 'خیلی زیاد — نمی‌دانم از کجا شروع کنم', emoji: '🌀' },
+                { value: 'some', label: 'چند تا — هنوز نمی‌دانم کدام را انتخاب کنم', emoji: '🤔' },
+                { value: 'few', label: 'کم — تقریباً می‌دانم چه کار کنم', emoji: '🧭' },
+                { value: 'none', label: 'هیچ‌کدام — دقیقاً می‌دانم چه می‌خواهم', emoji: '🎯' }
+            ]
+        }, {
+            id: 'environment',
+            text: 'محیط اطراف تو چقدر برای استفاده از FlowChank مناسب است؟',
+            desc: 'عوامل محیطی را بررسی کن.',
+            options: [
+                { value: 'noisy', label: 'پر از سر و صدا و حواس‌پرتی است', emoji: '📢' },
+                { value: 'busy', label: 'آدم‌ها مزاحم هستند', emoji: '👥' },
+                { value: 'unavailable', label: 'گوشی یا ابزار در دسترس نیست', emoji: '📴' },
+                { value: 'good', label: 'محیط آرام و مناسبی دارم', emoji: '🌿' },
+                { value: 'perfect', label: 'محیط عالی و بدون مزاحمت', emoji: '✨' }
+            ]
+        }, {
+            id: 'identity',
+            text: 'چه نسبتی بین تو و FlowChank وجود دارد؟',
+            desc: 'هویت رفتاری را بررسی کن.',
+            options: [
+                { value: 'tool', label: 'یک ابزار است — هر وقت نیاز باشه استفاده می‌کنم', emoji: '🔧' },
+                { value: 'habit', label: 'بخشی از عادت‌های روزانه‌ام است', emoji: '🔄' },
+                { value: 'identity', label: 'بخشی از هویت من است — با آن زندگی می‌کنم', emoji: '🧬' },
+                { value: 'forced', label: 'احساس می‌کنم باید استفاده کنم', emoji: '😤' },
+                { value: 'none', label: 'هنوز رابطه‌ای با آن ندارم', emoji: '🤷' }
+            ]
+        }, {
+            id: 'procrastination',
+            text: 'آیا منتظر شرایط خاصی برای استفاده از FlowChank هستی؟',
+            desc: 'تشخیص انتظار برای حالت ایده‌آل.',
+            options: [
+                { value: 'energy', label: 'منتظر انرژی بیشتر', emoji: '⚡' },
+                { value: 'time', label: 'منتظر زمان مناسب', emoji: '⏰' },
+                { value: 'mood', label: 'منتظر حال و هوای خوب', emoji: '😌' },
+                { value: 'perfect', label: 'منتظر شرایط کامل', emoji: '✨' },
+                { value: 'none', label: 'هیچ‌کدام — همین الان اقدام می‌کنم', emoji: '🚀' }
+            ]
+        }, {
+            id: 'failure',
+            text: 'اگر از FlowChank استفاده نکنی، دقیقاً در کدام مرحله شکست می‌خوری؟',
+            desc: 'لحظه دقیق شکست را پیدا کن.',
+            options: [
+                { value: 'need', label: 'اصلاً نیاز را تشخیص نمی‌دهم', emoji: '❓' },
+                { value: 'remember', label: 'به ذهنم نمی‌رسد که استفاده کنم', emoji: '💭' },
+                { value: 'decide', label: 'تصمیم نمی‌گیرم شروع کنم', emoji: '🤔' },
+                { value: 'start', label: 'تصمیم می‌گیرم ولی شروع نمی‌کنم', emoji: '😬' },
+                { value: 'continue', label: 'شروع می‌کنم ولی ادامه نمی‌دهم', emoji: '😩' },
+                { value: 'none', label: 'معمولاً موفق می‌شوم', emoji: '✅' }
+            ]
+        }, {
+            id: 'perfection',
+            text: 'استاندارد تو برای استفاده از FlowChank چیست؟',
+            desc: 'تشخیص کمال‌گرایی.',
+            options: [
+                { value: 'full', label: 'باید حداقل ۲۰ دقیقه تمرین کنم', emoji: '⏳' },
+                { value: 'focused', label: 'باید کاملاً متمرکز باشم', emoji: '🧘' },
+                { value: 'perfect', label: 'باید همه چیز عالی باشد', emoji: '✨' },
+                { value: 'any', label: 'هر مقداری کافی است — حتی ۱۰ ثانیه', emoji: '💪' },
+                { value: 'none', label: 'هیچ استانداردی ندارم', emoji: '😌' }
+            ]
+        }, {
+            id: 'reward',
+            text: 'پاداش استفاده از FlowChank را چقدر نزدیک می‌بینی؟',
+            desc: 'فاصله پاداش را اندازه بگیر.',
+            options: [
+                { value: 'far', label: 'خیلی دور — شاید یک روز به نتیجه برسم', emoji: '🌍' },
+                { value: 'medium', label: 'نسبتاً دور — اما می‌توانم پیشرفت را ببینم', emoji: '🔭' },
+                { value: 'near', label: 'نزدیک — هر بار که استفاده می‌کنم احساس خوبی دارم', emoji: '😊' },
+                { value: 'instant', label: 'فوری — لذت یادگیری و پیشرفت', emoji: '⚡' }
+            ]
+        }, {
+            id: 'reality',
+            text: 'اگر واقع‌بینانه نگاه کنی، هزینه استفاده از FlowChank چقدر است؟',
+            desc: 'بازنویسی ادراک ذهنی.',
+            options: [
+                { value: 'huge', label: 'خیلی زیاد — یک کار بزرگ است', emoji: '🏔️' },
+                { value: 'big', label: 'زیاد است — اما شدنی است', emoji: '⛰️' },
+                { value: 'small', label: 'کم است — فقط چند ثانیه', emoji: '⏱️' },
+                { value: 'tiny', label: 'خیلی کم — تقریباً رایگان است', emoji: '✨' }
+            ]
+        }];
+
+        // ============================================================
+        // وضعیت
+        // ============================================================
+        let currentIndex = 0;
+        let answers = {};
+
+        // ============================================================
+        // رندر سوال
+        // ============================================================
+        function renderQuestion(index) {
+            const q = questions[index];
+            if (!q) return;
+
+            const card = document.getElementById('questionCard');
+            card.classList.remove('slide-in', 'slide-out');
+
+            document.getElementById('qNumber').textContent =
+                `سوال ${index + 1} از ${questions.length}`;
+            document.getElementById('qText').textContent = q.text;
+            document.getElementById('qDesc').textContent = q.desc || '';
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.dataset.value = opt.value;
+                btn.innerHTML = `
+                    <span class="emoji">${opt.emoji}</span>
+                    <span>${opt.label}</span>
+                    <span class="check-mark">✓</span>
+                `;
+                btn.addEventListener('click', () => selectOption(q.id, opt.value, btn));
+                grid.appendChild(btn);
+            });
+
+            updateProgress(index);
+
+            requestAnimationFrame(() => {
+                card.classList.add('slide-in');
+            });
+        }
+
+        // ============================================================
+        // انتخاب گزینه
+        // ============================================================
+        function selectOption(qId, value, btn) {
+            answers[qId] = value;
+
+            const parent = btn.closest('.options-grid');
+            parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            setTimeout(() => {
+                const card = document.getElementById('questionCard');
+                card.classList.remove('slide-in');
+                card.classList.add('slide-out');
+
+                setTimeout(() => {
+                    if (currentIndex < questions.length - 1) {
+                        currentIndex++;
+                        renderQuestion(currentIndex);
+                    } else {
+                        showResult();
+                    }
+                }, 350);
+            }, 300);
+        }
+
+        // ============================================================
+        // پیشرفت
+        // ============================================================
+        function updateProgress(index) {
+            const container = document.getElementById('qProgress');
+            container.innerHTML = '';
+            for (let i = 0; i < questions.length; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'dot';
+                if (i < index) dot.classList.add('done');
+                if (i === index) dot.classList.add('active');
+                container.appendChild(dot);
+            }
+        }
+
+        // ============================================================
+        // تحلیل و نتیجه
+        // ============================================================
+        function analyzeAnswers(answers) {
+            const result = {
+                title: '',
+                badge: '',
+                badgeClass: '',
+                diagnosis: '',
+                resistance: [],
+                intervention: '',
+                identity: ''
+            };
+
+            const energy = answers.energy || 'medium';
+            const friction = answers.friction || 'none';
+            const cognitive = answers.cognitive || 'none';
+            const emotional = answers.emotional || 'none';
+            const decision = answers.decision || 'few';
+            const environment = answers.environment || 'good';
+            const identity = answers.identity || 'tool';
+            const procrastination = answers.procrastination || 'none';
+            const failure = answers.failure || 'none';
+            const perfection = answers.perfection || 'any';
+            const reward = answers.reward || 'near';
+            const reality = answers.reality || 'small';
+
+            // ۱. کمبود انرژی
+            if (energy === 'zero' || energy === 'low') {
+                result.title = '🧘 اول استراحت، بعد اقدام';
+                result.badge = 'کمبود انرژی';
+                result.badgeClass = 'badge-orange';
+                result.diagnosis = '⚡ کمبود انرژی';
+                result.resistance.push('انرژی پایین یا فرسودگی');
+                result.intervention = 'به جای استفاده از FlowChank، ۵ دقیقه استراحت کن. چشمانت را ببند و نفس عمیق بکش. بعد از استراحت، فقط ۱۰ ثانیه از FlowChank استفاده کن.';
+                result.identity = 'من کسی هستم که به نیازهای بدنم احترام می‌گذارم و در شرایط مناسب اقدام می‌کنم.';
+                return result;
+            }
+
+            // ۲. کمال‌گرایی
+            if (perfection === 'full' || perfection === 'focused' || perfection === 'perfect') {
+                result.title = '🎯 کامل بودن را رها کن';
+                result.badge = 'کمال‌گرایی';
+                result.badgeClass = 'badge-red';
+                result.diagnosis = '🎯 کمال‌گرایی';
+                result.resistance.push('استانداردهای غیرواقعی', 'ترس از ناقص بودن');
+                result.intervention = 'قانون ۱۰ ثانیه: فقط ۱۰ ثانیه از FlowChank استفاده کن. هیچ استانداردی وجود ندارد. هر چیزی که انجام دهی موفقیت است.';
+                result.identity = 'من کسی هستم که پیشرفت را به کمال ترجیح می‌دهم. هر قدم کوچک، موفقیت بزرگ است.';
+                return result;
+            }
+
+            // ۳. انتظار برای حالت ایده‌آل
+            if (procrastination !== 'none') {
+                const map = { energy: 'انرژی', time: 'زمان مناسب', mood: 'حال و هوای خوب', perfect: 'شرایط کامل' };
+                result.title = '⏰ الان وقتشه، نه بعداً';
+                result.badge = 'تعویق‌اندازی';
+                result.badgeClass = 'badge-orange';
+                result.diagnosis = '⏰ انتظار برای شرایط ایده‌آل';
+                result.resistance.push(`منتظر ${map[procrastination] || 'شرایط ایده‌آل'} هستی`, 'به تعویق انداختن سیستماتیک');
+                result.intervention = 'شرایط ایده‌آل هرگز نمی‌آید. همین الان فقط یک بار FlowChank را باز کن. حتی اگر ۵ ثانیه باشد. فقط شروع کن.';
+                result.identity = 'من کسی هستم که در هر شرایطی اقدام می‌کنم. منتظر کمال نمی‌مانم.';
+                return result;
+            }
+
+            // ۴. بار تصمیم
+            if (decision === 'many' || decision === 'some') {
+                result.title = '🌀 یک انتخاب کافی است';
+                result.badge = 'بار تصمیم';
+                result.badgeClass = 'badge-blue';
+                result.diagnosis = '🌀 اضافه‌بار تصمیم';
+                result.resistance.push('تعداد گزینه‌ها زیاد است', 'نمی‌دانی از کجا شروع کنی');
+                result.intervention = 'فقط یک دسته را انتخاب کن. هیچ تصمیم دیگری نگیر. اگر نمی‌دانی کدام را انتخاب کنی، اولین دسته را انتخاب کن.';
+                result.identity = 'من کسی هستم که تصمیم‌گیری را ساده می‌کنم. یک انتخاب کافی است.';
+                return result;
+            }
+
+            // ۵. اصطکاک فیزیکی
+            if (friction !== 'none' && friction !== 'none') {
+                const map = {
+                    phone: 'برداشتن گوشی و باز کردن قفل',
+                    app: 'پیدا کردن برنامه بین اپ‌ها',
+                    category: 'انتخاب دسته یا موضوع',
+                    phrase: 'پیدا کردن جمله مناسب',
+                    start: 'همین اول شروع کردن'
+                };
+                result.title = '🔧 اصطکاک را کم کن';
+                result.badge = 'اصطکاک فیزیکی';
+                result.badgeClass = 'badge-orange';
+                result.diagnosis = '🔧 اصطکاک فیزیکی';
+                result.resistance.push(`مشکل در: ${map[friction] || friction}`);
+                result.intervention =
+                    `FlowChank را به صفحه اول گوشی منتقل کن. از ویجت استفاده کن. مسیر دسترسی را کوتاه کن. مشکل ${map[friction] || friction} را حل کن.`;
+                result.identity = 'من کسی هستم که محیط را برای کاهش اصطکاک طراحی می‌کنم.';
+                return result;
+            }
+
+            // ۶. مقاومت هیجانی
+            if (emotional !== 'none') {
+                const map = {
+                    fear: 'ترس از اشتباه',
+                    shame: 'خجالت از صدای خودت',
+                    fail: 'احساس شکست و ناامیدی',
+                    stress: 'استرس و فشار زیاد',
+                    bored: 'بی‌حوصلگی و خستگی'
+                };
+                result.title = '❤️ احساسات را بپذیر، اما متوقف نشو';
+                result.badge = 'مقاومت هیجانی';
+                result.badgeClass = 'badge-red';
+                result.diagnosis = '❤️ مقاومت هیجانی';
+                result.resistance.push(map[emotional] || emotional);
+                result.intervention = 'هیچ‌کس قرار نیست صدایت را قضاوت کند. فقط برای خودت تمرین کن. هدف کمال نیست، هدف تمرین است.';
+                result.identity = 'من کسی هستم که از احساساتم آگاهم و با آنها کار می‌کنم، نه علیه آنها.';
+                return result;
+            }
+
+            // ۷. مقاومت شناختی
+            if (cognitive !== 'none') {
+                const map = {
+                    perfect: 'کمال‌گرایی ذهنی',
+                    later: 'به تعویق انداختن',
+                    useless: 'بی‌فایده‌پنداری',
+                    hard: 'بزرگ‌نمایی سختی',
+                    forget: 'فراموشی سیستماتیک'
+                };
+                result.title = '🧠 واقعیت را بازنویسی کن';
+                result.badge = 'مقاومت شناختی';
+                result.badgeClass = 'badge-blue';
+                result.diagnosis = '🧠 مقاومت شناختی';
+                result.resistance.push(map[cognitive] || cognitive);
+                result.intervention = 'ذهن تو دارد هزینه را بزرگ‌نمایی می‌کند. واقعیت: استفاده از FlowChank فقط چند ثانیه زمان می‌برد. فقط شروع کن.';
+                result.identity = 'من کسی هستم که افکارم را به چالش می‌کشم و واقعیت را می‌بینم.';
+                return result;
+            }
+
+            // ۸. شکاف هویتی
+            if (identity === 'forced' || identity === 'none') {
+                result.title = '🧬 هویت جدیدت را انتخاب کن';
+                result.badge = 'شکاف هویتی';
+                result.badgeClass = 'badge-purple';
+                result.diagnosis = '🧬 شکاف هویتی';
+                result.resistance.push('هویت فعلی با رفتار هدف همخوانی ندارد', 'احساس اجبار یا بی‌ارتباطی');
+                result.intervention = 'سوال: نسخه‌ای از تو که FlowChank جزئی از زندگی‌اش است، در این لحظه چه می‌کند؟ فقط یک بار آن نسخه را بازی کن.';
+                result.identity = 'من در حال ساختن نسخه‌ای از خودم هستم که با زبان زندگی می‌کند.';
+                return result;
+            }
+
+            // ۹. فاصله پاداش
+            if (reward === 'far' || reward === 'medium') {
+                result.title = '🏆 پاداش فوری بساز';
+                result.badge = 'فاصله پاداش';
+                result.badgeClass = 'badge-green';
+                result.diagnosis = '🏆 فاصله پاداش';
+                result.resistance.push('پاداش خیلی دور است', 'انگیزه کافی برای شروع وجود ندارد');
+                result.intervention = 'پاداش فوری بساز: بعد از هر بار استفاده از FlowChank، به خودت یک کار کوچک لذت‌بخش بده. یک نفس عمیق، یک لبخند، یک حرکت کوچک.';
+                result.identity = 'من کسی هستم که پاداش‌های کوچک را جشن می‌گیرم.';
+                return result;
+            }
+
+            // ۱۰. بزرگ‌نمایی هزینه
+            if (reality === 'huge' || reality === 'big') {
+                result.title = '🏔️ هزینه واقعی را ببین';
+                result.badge = 'بزرگ‌نمایی هزینه';
+                result.badgeClass = 'badge-orange';
+                result.diagnosis = '🏔️ بزرگ‌نمایی هزینه';
+                result.resistance.push('هزینه واقعی را بیشتر از آنچه هست می‌بینی', 'ذهن دارد کار را بزرگ نشان می‌دهد');
+                result.intervention = 'واقعیت: استفاده از FlowChank کمتر از ۱۰ ثانیه زمان می‌برد. فقط همین الان یک بار آن را باز کن.';
+                result.identity = 'من کسی هستم که واقعیت را می‌بینم، نه ادراک بزرگ‌نمایی‌شده را.';
+                return result;
+            }
+
+            // ۱۱. شکست در زنجیره رفتار
+            if (failure !== 'none') {
+                const map = {
+                    need: 'تشخیص نیاز',
+                    remember: 'یادآوری',
+                    decide: 'تصمیم‌گیری',
+                    start: 'شروع',
+                    continue: 'ادامه'
+                };
+                const interventions = {
+                    need: 'هر بار که نیاز به بیان داری، FlowChank را به خاطر بیاور',
+                    remember: 'یک یادآور روزانه در گوشی تنظیم کن',
+                    decide: 'تصمیم را از قبل بگیر: هر روز صبح اولین کاری که می‌کنی FlowChank است',
+                    start: 'قانون ۵ ثانیه: وقتی تصمیم گرفتی، تا ۵ بشمار و شروع کن',
+                    continue: 'حداقل یک جمله را کامل کن'
+                };
+                result.title = '🔗 زنجیره را کامل کن';
+                result.badge = 'شکست در زنجیره';
+                result.badgeClass = 'badge-red';
+                result.diagnosis = '🔗 شکست در زنجیره رفتار';
+                result.resistance.push(`شکست در مرحله: ${map[failure] || failure}`);
+                result.intervention = interventions[failure] || 'روی مرحله شکست کار کن';
+                result.identity = 'من کسی هستم که زنجیره رفتارم را کامل می‌کنم.';
+                return result;
+            }
+
+            // ۱۲. مقاومت محیطی
+            if (environment === 'noisy' || environment === 'busy' || environment === 'unavailable') {
+                result.title = '🌍 محیط را تغییر بده';
+                result.badge = 'مقاومت محیطی';
+                result.badgeClass = 'badge-orange';
+                result.diagnosis = '🌍 مقاومت محیطی';
+                result.resistance.push('محیط مناسب نیست');
+                result.intervention = 'محیط را تغییر بده. به جای دیگری برو. هدفون بگذار. یا یک زمان دیگر که محیط آرام‌تر است را انتخاب کن.';
+                result.identity = 'من کسی هستم که محیط را برای موفقیت طراحی می‌کنم.';
+                return result;
+            }
+
+            // حالت پیش‌فرض
+            result.title = '✅ ادامه بده، عالی پیش می‌روی';
+            result.badge = 'در مسیر درست';
+            result.badgeClass = 'badge-green';
+            result.diagnosis = '✅ وضعیت عالی';
+            result.resistance.push('هیچ مقاومت جدی شناسایی نشد');
+            result.intervention = 'همین کار را ادامه بده. FlowChank بخشی از زندگی تو شده است. از این مسیر لذت ببر.';
+            result.identity = 'من کسی هستم که با زبان زندگی می‌کنم. FlowChank بخشی از هویت من است.';
+            return result;
+        }
+
+        // ============================================================
+        // نمایش نتیجه
+        // ============================================================
+        function showResult() {
+            const card = document.getElementById('questionCard');
+            card.style.display = 'none';
+
+            const result = analyzeAnswers(answers);
+
+            const rCard = document.getElementById('resultCard');
+            rCard.classList.add('visible');
+
+            document.getElementById('rTitle').textContent = result.title;
+            const badge = document.getElementById('rBadge');
+            badge.textContent = result.badge;
+            badge.className = 'r-badge ' + result.badgeClass;
+
+            document.getElementById('rDiagnosis').textContent = result.diagnosis;
+
+            const ul = document.getElementById('rResistance');
+            ul.innerHTML = '';
+            if (result.resistance.length === 0) {
+                ul.innerHTML = '<li>هیچ مقاومت قابل توجهی شناسایی نشد</li>';
+            } else {
+                result.resistance.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    ul.appendChild(li);
+                });
+            }
+
+            document.getElementById('rIntervention').textContent = result.intervention;
+            document.getElementById('rIdentity').textContent = result.identity;
+
+            rCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ============================================================
+        // ریست
+        // ============================================================
+        function resetTest() {
+            currentIndex = 0;
+            answers = {};
+
+            document.getElementById('resultCard').classList.remove('visible');
+            document.getElementById('resultCard').style.display = 'none';
+
+            const card = document.getElementById('questionCard');
+            card.style.display = 'flex';
+            card.classList.remove('slide-out');
+
+            renderQuestion(0);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // مقداردهی اولیه
+        // ============================================================
+        document.getElementById('resetBtn').addEventListener('click', resetTest);
+        renderQuestion(0);
+
+        console.log('✨ PLOS-SAPSE · نسخه روشن با افکت‌های پس‌زمینه');
+        console.log(`📋 ${questions.length} سوال برای تشخیص دقیق`);
+    </script>
 </body>
 </html>
