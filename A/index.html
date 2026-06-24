@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>PLOS-SAPSE Prototype</title>
+<style>
+body{font-family:sans-serif;max-width:900px;margin:auto;padding:20px;line-height:1.8}
+.card{border:1px solid #ccc;border-radius:12px;padding:16px;margin:12px 0}
+button{padding:10px 16px;margin:6px;cursor:pointer}
+.result{margin-top:20px;padding:15px;border-radius:10px;border:1px solid #aaa}
+</style>
+</head>
+<body>
+<h1>PLOS-SAPSE Prototype</h1>
+<p>این سیستم زبان آموزش نمی‌دهد؛ فقط تشخیص می‌دهد چرا عمل اتفاق نیفتاد.</p>
+
+<div class="card">
+<h3>الان چرا FlowChank را باز نکردی؟</h3>
+<button onclick="showResult('physical')">حوصله برداشتن گوشی را نداشتم</button>
+<button onclick="showResult('cognitive')">نمی‌دانستم از کجا شروع کنم</button>
+<button onclick="showResult('energy')">خسته بودم</button>
+<button onclick="showResult('identity')">حس کردم متعلق به من نیست</button>
+<button onclick="showResult('decision')">گفتم بعداً انجام می‌دهم</button>
+</div>
+
+<div id="output" class="result">یک گزینه را انتخاب کن.</div>
+
+<script>
+function showResult(type){
+const data={
+physical:["اصطکاک فیزیکی","هزینه شروع زیاد شده.","فقط گوشی را بردار.","فقط صفحه را روشن کن.","فقط FlowChank را باز کن."],
+cognitive:["اصطکاک شناختی","شروع مبهم است.","فقط آخرین دسته استفاده شده را باز کن.","فقط یک جمله را ببین."],
+energy:["اصطکاک انرژی","مغز در حالت صرفه‌جویی است.","فقط ۲۰ ثانیه استفاده کن.","فقط گوش بده."],
+identity:["اصطکاک هویتی","سیستم هنوز بخشی از هویت نیست.","هدفت را از یادگیری به زندگی با زبان تغییر بده."],
+decision:["اصطکاک تصمیم","تصمیم‌گیری خودش هزینه دارد.","قانون ثابت بساز: هر بار گوشی را باز کردم FlowChank هم باز می‌شود."]
+};
+let d=data[type];
+document.getElementById("output").innerHTML=
+"<h2>"+d[0]+"</h2><p>"+d[1]+"</p><ul>"+d.slice(2).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+}
+</script>
+</body>
+</html>
