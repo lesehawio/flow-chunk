@@ -408,6 +408,27 @@
             .main-container { padding: 1rem; }
             .category-title { font-size: 0.95rem; }
         }
+        /* دکمه پوشه A */
+.folder-a-btn {
+    background: rgba(255,255,240,0.15);
+    border: 1px solid var(--border);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--text);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.folder-a-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    transform: scale(1.05);
+}
     </style>
 </head>
 <body>
@@ -417,7 +438,12 @@
         <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
         <img class="logo-img" src="https://uploadkon.ir/uploads/c56f11_26Polish-۲۰۲۶۰۶۱۱-۱۲۴۸۱۶۹۹۲.png" alt="FluentChunk">
     </div>
-    <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i> تم شب</button>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button id="folderABtn" class="folder-a-btn" title="رفتن به پوشه A">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button id="themeToggle" class="theme-toggle"><i class="fas fa-moon"></i> تم شب</button>
+    </div>
 </div>
 
 <div class="search-area">
@@ -501,7 +527,7 @@ const categoriesHierarchy = [
     },
     {
         id: 2,
-        name: "✈️ حمل و نقل و جابه‌جایی",
+        name: " حمل و نقل و جابه‌جایی",
         icon: "fa-car",
         description: "تاکسی، مترو، فرودگاه، رانندگی",
         children: [
@@ -934,6 +960,10 @@ document.getElementById('clearSearch').onclick = () => {
 
 buildTreeMenu();
 showMainPage();
+    // دکمه رفتن به پوشه A
+document.getElementById('folderABtn').onclick = () => {
+    window.location.href = 'A/index.html';
+};
 </script>
 </body>
 </html>
