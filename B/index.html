@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>FlowPilot · خلبان گفتار</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ============================================================
+           RESET & VARIABLES
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #f5f0ff;
+            --bg-card: rgba(255, 250, 255, 0.85);
+            --text-primary: #1f1a2e;
+            --text-secondary: #4a3f5e;
+            --border-color: rgba(200, 160, 255, 0.2);
+            --shadow: 0 20px 40px -12px rgba(80, 40, 120, 0.12);
+            --glass-blur: blur(24px);
+            --hl-red: #e63946;
+            --hl-orange: #f77f00;
+            --hl-green: #2a9d8f;
+            --hl-blue: #3a86ff;
+            --hl-purple: #7c3a8a;
+            --radius: 1.8rem;
+        }
+
+        body {
+            font-family: 'Inter', 'Vazirmatn', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            margin: 0;
+        }
+
+        /* ============================================================
+           ویجت اصلی
+           ============================================================ */
+        .widget {
+            max-width: 520px;
+            width: 100%;
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: var(--radius);
+            padding: 1.8rem 2rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            position: relative;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        .widget::-webkit-scrollbar {
+            width: 4px;
+        }
+        .widget::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .widget::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+
+        /* ============================================================
+           هدر ویجت
+           ============================================================ */
+        .widget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .widget-header .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .widget-header .brand .logo {
+            font-size: 1.4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--hl-blue), var(--hl-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .widget-header .brand .logo .pilot {
+            font-weight: 300;
+            background: linear-gradient(135deg, var(--hl-orange), var(--hl-red));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .widget-header .badge {
+            background: var(--hl-green);
+            color: white;
+            padding: 0.15rem 0.7rem;
+            border-radius: 2rem;
+            font-size: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .widget-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            transition: 0.3s;
+            padding: 0.2rem 0.4rem;
+            border-radius: 50%;
+        }
+        .widget-header .close-btn:hover {
+            opacity: 1;
+            background: rgba(230, 57, 70, 0.08);
+            color: var(--hl-red);
+        }
+
+        /* ============================================================
+           وضعیت اتصال
+           ============================================================ */
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+            margin-bottom: 1rem;
+            padding: 0.3rem 0.8rem;
+            background: rgba(200, 160, 255, 0.06);
+            border-radius: 2rem;
+        }
+
+        .connection-status .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connection-status .dot.connected {
+            background: var(--hl-green);
+            animation: pulse-dot 2s infinite;
+        }
+
+        .connection-status .dot.disconnected {
+            background: var(--hl-red);
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* ============================================================
+           استپر (مراحل)
+           ============================================================ */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0 0.2rem;
+        }
+
+        .step-dot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+            flex: 1;
+            position: relative;
+        }
+
+        .step-dot .circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(200, 160, 255, 0.12);
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            transition: all 0.4s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-dot.active .circle {
+            background: var(--hl-blue);
+            border-color: var(--hl-blue);
+            color: white;
+            box-shadow: 0 0 20px rgba(58, 134, 255, 0.25);
+        }
+
+        .step-dot.done .circle {
+            background: var(--hl-green);
+            border-color: var(--hl-green);
+            color: white;
+        }
+
+        .step-dot .label {
+            font-size: 0.45rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            text-align: center;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .step-dot.active .label,
+        .step-dot.done .label {
+            opacity: 0.8;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: var(--border-color);
+            margin: 0 -0.3rem;
+            z-index: 1;
+            transition: 0.4s;
+        }
+
+        .step-line.done {
+            background: var(--hl-green);
+        }
+
+        /* ============================================================
+           کارت سوال
+           ============================================================ */
+        .question-area {
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            animation: fadeSlide 0.35s ease;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-area .q-number {
+            font-size: 0.6rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            margin-bottom: 0.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .question-area .q-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .question-area .q-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.5;
+            margin-bottom: 1.2rem;
+        }
+
+        /* گزینه‌ها */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1.5px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            color: var(--text-primary);
+            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            line-height: 1.3;
+        }
+
+        .option-btn .emoji {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .option-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: var(--hl-blue);
+            transform: translateY(-1px);
+        }
+
+        .option-btn.selected {
+            border-color: var(--hl-green);
+            background: rgba(42, 157, 143, 0.08);
+            box-shadow: 0 0 20px rgba(42, 157, 143, 0.04);
+        }
+
+        .option-btn .check {
+            margin-right: auto;
+            color: var(--hl-green);
+            opacity: 0;
+            transition: 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .option-btn.selected .check {
+            opacity: 1;
+        }
+
+        /* ============================================================
+           دکمه‌ها
+           ============================================================ */
+        .btn-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 2.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--hl-blue), var(--hl-purple));
+            color: white;
+            box-shadow: 0 4px 20px rgba(58, 134, 255, 0.2);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: scale(1.03);
+            box-shadow: 0 8px 30px rgba(58, 134, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(200, 160, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(200, 160, 255, 0.18);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--hl-red), #c0392b);
+            color: white;
+            box-shadow: 0 4px 20px rgba(230, 57, 70, 0.15);
+        }
+        .btn-danger:hover:not(:disabled) {
+            transform: scale(1.03);
+            box-shadow: 0 8px 30px rgba(230, 57, 70, 0.25);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--hl-green), #1a7a6e);
+            color: white;
+        }
+        .btn-success:hover:not(:disabled) {
+            transform: scale(1.03);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.65rem;
+        }
+
+        /* ============================================================
+           حالت اضطراری
+           ============================================================ */
+        .emergency-bar {
+            background: rgba(230, 57, 70, 0.06);
+            border: 1px solid rgba(230, 57, 70, 0.12);
+            border-radius: 1rem;
+            padding: 0.6rem 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .emergency-bar .label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--hl-red);
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+
+        /* ============================================================
+           نتیجه
+           ============================================================ */
+        .result-area {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .result-area.visible {
+            display: block;
+        }
+
+        .result-area .r-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .result-area .r-header h3 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .result-area .r-header .confidence {
+            font-size: 0.6rem;
+            background: rgba(42, 157, 143, 0.08);
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            color: var(--hl-green);
+            font-weight: 600;
+        }
+
+        .chunk-item {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 1rem;
+            padding: 0.9rem 1.1rem;
+            margin-bottom: 0.6rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chunk-item:hover {
+            border-color: var(--hl-blue);
+            transform: translateX(-3px);
+        }
+
+        .chunk-item .eng {
+            font-size: 0.95rem;
+            font-weight: 700;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .chunk-item .fa {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.1rem;
+        }
+
+        .chunk-item .meta {
+            font-size: 0.5rem;
+            color: var(--text-secondary);
+            opacity: 0.4;
+            margin-top: 0.3rem;
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .chunk-item .meta span {
+            background: rgba(200, 160, 255, 0.06);
+            padding: 0.05rem 0.5rem;
+            border-radius: 1rem;
+        }
+
+        .chunk-item .actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .chunk-item .actions button {
+            background: none;
+            border: none;
+            padding: 0.15rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .chunk-item .actions button:hover {
+            opacity: 1;
+            background: rgba(58, 134, 255, 0.06);
+            color: var(--hl-blue);
+        }
+
+        .chunk-item .select-hint {
+            font-size: 0.55rem;
+            color: var(--hl-blue);
+            opacity: 0;
+            transition: 0.3s;
+            margin-top: 0.2rem;
+        }
+
+        .chunk-item:hover .select-hint {
+            opacity: 0.5;
+        }
+
+        /* ============================================================
+           پاسخگو
+           ============================================================ */
+        @media (max-width: 480px) {
+            .widget {
+                padding: 1.2rem 1rem;
+                border-radius: 1.4rem;
+                max-height: 98vh;
+            }
+
+            .widget-header .brand .logo {
+                font-size: 1.1rem;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 0.4rem;
+            }
+
+            .option-btn {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.72rem;
+            }
+
+            .question-area .q-text {
+                font-size: 1rem;
+            }
+
+            .step-dot .circle {
+                width: 28px;
+                height: 28px;
+                font-size: 0.55rem;
+            }
+
+            .step-dot .label {
+                font-size: 0.4rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.68rem;
+            }
+
+            .chunk-item .eng {
+                font-size: 0.85rem;
+            }
+
+            .emergency-bar {
+                padding: 0.4rem 0.8rem;
+            }
+            .emergency-bar .label {
+                font-size: 0.6rem;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .widget {
+                padding: 0.8rem;
+            }
+            .step-dot .circle {
+                width: 22px;
+                height: 22px;
+                font-size: 0.45rem;
+            }
+            .option-btn {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.65rem;
+            }
+            .option-btn .emoji {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+ویجت اصلی
+============================================================ -->
+<div class="widget" id="widget">
+
+    <!-- ============================================================
+    هدر
+    ============================================================ -->
+    <div class="widget-header">
+        <div class="brand">
+            <span class="logo">Flow<span class="pilot">Pilot</span></span>
+            <span class="badge">خلبان</span>
+        </div>
+        <button class="close-btn" id="closeBtn" title="بستن ویجت">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- ============================================================
+    وضعیت اتصال
+    ============================================================ -->
+    <div class="connection-status" id="connectionStatus">
+        <span class="dot connected" id="statusDot"></span>
+        <span id="statusText">متصل به FlowChank</span>
+    </div>
+
+    <!-- ============================================================
+    نوار پیشرفت
+    ============================================================ -->
+    <div class="stepper" id="stepper">
+        <div class="step-dot active" data-step="0">
+            <div class="circle">۱</div>
+            <span class="label">هدف</span>
+        </div>
+        <div class="step-line" data-line="0"></div>
+        <div class="step-dot" data-step="1">
+            <div class="circle">۲</div>
+            <span class="label">موقعیت</span>
+        </div>
+        <div class="step-line" data-line="1"></div>
+        <div class="step-dot" data-step="2">
+            <div class="circle">۳</div>
+            <span class="label">موضوع</span>
+        </div>
+        <div class="step-line" data-line="2"></div>
+        <div class="step-dot" data-step="3">
+            <div class="circle">۴</div>
+            <span class="label">فوریت</span>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    حالت اضطراری
+    ============================================================ -->
+    <div class="emergency-bar" id="emergencyBar">
+        <span class="label"><i class="fas fa-triangle-exclamation"></i> حالت اضطراری</span>
+        <button class="btn btn-danger btn-sm" id="emergencyBtn">
+            🚨 فعال‌سازی
+        </button>
+    </div>
+
+    <!-- ============================================================
+    بخش سوال
+    ============================================================ -->
+    <div class="question-area" id="questionArea">
+        <div class="q-number" id="qNumber">سوال ۱ از ۴</div>
+        <div class="q-text" id="qText">هدف تو از گفتن این جمله چیست؟</div>
+        <div class="q-desc" id="qDesc">این به من کمک می‌کند بهترین چانک را انتخاب کنم.</div>
+        <div class="options-grid" id="optionsGrid"></div>
+    </div>
+
+    <!-- ============================================================
+    بخش نتیجه
+    ============================================================ -->
+    <div class="result-area" id="resultArea">
+        <div class="r-header">
+            <h3>✈️ پیشنهادات</h3>
+            <span class="confidence" id="confidenceBadge">اطمینان ۹۲%</span>
+        </div>
+        <div id="resultContent"></div>
+        <div class="btn-row">
+            <button class="btn btn-secondary btn-sm" id="retryBtn">🔄 دوباره</button>
+            <button class="btn btn-success btn-sm" id="useBtn">✅ استفاده کن</button>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    دکمه‌های پایین
+    ============================================================ -->
+    <div class="btn-row" id="actionButtons">
+        <button class="btn btn-secondary btn-sm" id="resetBtn">🔄 شروع مجدد</button>
+        <button class="btn btn-primary btn-sm" id="nextBtn" disabled>
+            بعدی <i class="fas fa-arrow-left"></i>
+        </button>
+    </div>
+
+</div>
+
+<!-- ============================================================
+اسکریپت کامل
+============================================================ -->
+<script>
+    // ============================================================
+    // ============================================================
+    // داده‌های چانک‌ها با متادیتا
+    // ============================================================
+    // ============================================================
+    const CHUNKS = [
+        // ========== خانه · درخواست · تعمیرات ==========
+        {
+            eng: "There's a leak under the kitchen sink.",
+            fa: "زیر سینک آشپزخانه نشتی داره.",
+            category: "home",
+            subcategory: "plumbing",
+            intent: "report_problem",
+            urgency: ["normal", "urgent"],
+            formality: "neutral",
+            audience: ["repairman", "landlord"]
+        },
+        {
+            eng: "The water heater isn't working. No hot water at all.",
+            fa: "آبگرم‌کن کار نمی‌کنه. اصلاً آب گرم ندارم.",
+            category: "home",
+            subcategory: "plumbing",
+            intent: "report_problem",
+            urgency: ["urgent", "emergency"],
+            formality: "neutral",
+            audience: ["repairman"]
+        },
+        {
+            eng: "I think the breaker tripped. Nothing is working now.",
+            fa: "فکر کنم فیوز پریده. الان هیچی کار نمی‌کنه.",
+            category: "home",
+            subcategory: "electrical",
+            intent: "report_problem",
+            urgency: ["urgent", "emergency"],
+            formality: "neutral",
+            audience: ["repairman", "landlord"]
+        },
+        {
+            eng: "Can you come today? It's urgent.",
+            fa: "امروز می‌تونی بیای؟ اورژانسیه.",
+            category: "home",
+            subcategory: "general",
+            intent: "request",
+            urgency: ["urgent"],
+            formality: "neutral",
+            audience: ["repairman", "friend"]
+        },
+        // ========== خانه · غذا ==========
+        {
+            eng: "I'm going to hit the hay.",
+            fa: "می‌رم بخوابم.",
+            category: "home",
+            subcategory: "sleep",
+            intent: "explain",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["family", "friend"]
+        },
+        {
+            eng: "Let's grab breakfast together.",
+            fa: "بیا با هم صبحانه بخوریم.",
+            category: "home",
+            subcategory: "food",
+            intent: "request",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["family", "friend"]
+        },
+        // ========== خانه · نظافت ==========
+        {
+            eng: "I need to clean up the kitchen.",
+            fa: "باید آشپزخونه رو تمیز کنم.",
+            category: "home",
+            subcategory: "cleaning",
+            intent: "explain",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["family"]
+        },
+        // ========== خیابان · درخواست ==========
+        {
+            eng: "Excuse me, can you help me find this address?",
+            fa: "ببخشید، می‌تونید کمک کنید این آدرس رو پیدا کنم؟",
+            category: "street",
+            subcategory: "directions",
+            intent: "help",
+            urgency: ["normal"],
+            formality: "polite",
+            audience: ["stranger"]
+        },
+        {
+            eng: "How much does it cost to get to the airport?",
+            fa: "تا فرودگاه چنده؟",
+            category: "street",
+            subcategory: "transport",
+            intent: "question",
+            urgency: ["normal"],
+            formality: "neutral",
+            audience: ["driver"]
+        },
+        // ========== رستوران ==========
+        {
+            eng: "A table for two, please.",
+            fa: "میز دو نفر، لطفاً.",
+            category: "restaurant",
+            subcategory: "dining",
+            intent: "request",
+            urgency: ["normal"],
+            formality: "polite",
+            audience: ["waiter"]
+        },
+        {
+            eng: "What do you recommend on the menu?",
+            fa: "چی رو پیشنهاد می‌دی؟",
+            category: "restaurant",
+            subcategory: "dining",
+            intent: "question",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["waiter"]
+        },
+        // ========== بیمارستان ==========
+        {
+            eng: "I have a severe headache and I feel dizzy.",
+            fa: "سردرد شدید دارم و سرگیجه دارم.",
+            category: "hospital",
+            subcategory: "symptoms",
+            intent: "explain",
+            urgency: ["urgent", "emergency"],
+            formality: "neutral",
+            audience: ["doctor", "nurse"]
+        },
+        {
+            eng: "Call an ambulance! It's an emergency!",
+            fa: "آمبولانس زنگ بزن! اورژانسیه!",
+            category: "hospital",
+            subcategory: "emergency",
+            intent: "help",
+            urgency: ["emergency"],
+            formality: "casual",
+            audience: ["anyone"]
+        },
+        // ========== اداره ==========
+        {
+            eng: "I'd like to schedule a meeting for next week.",
+            fa: "می‌خوام برای هفته آینده جلسه بذارم.",
+            category: "office",
+            subcategory: "meetings",
+            intent: "request",
+            urgency: ["normal"],
+            formality: "formal",
+            audience: ["colleague", "boss"]
+        },
+        {
+            eng: "I'll send you the report by Friday.",
+            fa: "گزارش رو تا جمعه می‌فرستم.",
+            category: "office",
+            subcategory: "emails",
+            intent: "explain",
+            urgency: ["normal"],
+            formality: "formal",
+            audience: ["colleague", "boss"]
+        },
+        // ========== دوستانه ==========
+        {
+            eng: "Hey, what's up? Long time no see!",
+            fa: "سلام، چه خبر؟ خیلی وقته ندیدمت!",
+            category: "anywhere",
+            subcategory: "greeting",
+            intent: "chat",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["friend"]
+        },
+        {
+            eng: "I'm really sorry. It was my fault.",
+            fa: "واقعاً متاسفم. تقصیر من بود.",
+            category: "anywhere",
+            subcategory: "apology",
+            intent: "explain",
+            urgency: ["normal"],
+            formality: "neutral",
+            audience: ["anyone"]
+        },
+        // ========== فروشگاه ==========
+        {
+            eng: "Can I return this? It doesn't fit.",
+            fa: "می‌تونم این رو برگردونم؟ اندازه نیست.",
+            category: "store",
+            subcategory: "returns",
+            intent: "request",
+            urgency: ["normal"],
+            formality: "polite",
+            audience: ["clerk"]
+        },
+        // ========== احساسات ==========
+        {
+            eng: "I'm so happy today!",
+            fa: "امروز خیلی خوشحالم!",
+            category: "anywhere",
+            subcategory: "emotions",
+            intent: "express_feeling",
+            urgency: ["normal"],
+            formality: "casual",
+            audience: ["anyone"]
+        },
+        // ========== درخواست کمک عمومی ==========
+        {
+            eng: "Can you help me with this?",
+            fa: "می‌تونی به من کمک کنی؟",
+            category: "anywhere",
+            subcategory: "help",
+            intent: "help",
+            urgency: ["normal", "urgent"],
+            formality: "neutral",
+            audience: ["anyone"]
+        }
+    ];
+
+    // ============================================================
+    // ============================================================
+    // پرسش‌ها
+    // ============================================================
+    // ============================================================
+    const QUESTIONS = [{
+        id: 'intent',
+        text: 'هدف تو از گفتن این جمله چیست؟',
+        desc: 'این به من کمک می‌کند بهترین چانک را انتخاب کنم.',
+        options: [
+            { value: 'request', label: 'چیزی درخواست کنم', emoji: '🙋' },
+            { value: 'question', label: 'سوال بپرسم', emoji: '❓' },
+            { value: 'explain', label: 'چیزی را توضیح بدهم', emoji: '📝' },
+            { value: 'express_feeling', label: 'احساسی را بیان کنم', emoji: '❤️' },
+            { value: 'report_problem', label: 'مشکل را گزارش کنم', emoji: '⚠️' },
+            { value: 'help', label: 'کمک بخواهم', emoji: '🆘' },
+            { value: 'chat', label: 'با کسی گپ بزنم', emoji: '💬' }
+        ]
+    }, {
+        id: 'category',
+        text: 'الان کجا هستی؟',
+        desc: 'موقعیت تو در انتخاب جمله مناسب تأثیر دارد.',
+        options: [
+            { value: 'home', label: 'خانه', emoji: '🏠' },
+            { value: 'street', label: 'خیابان', emoji: '🚶' },
+            { value: 'restaurant', label: 'رستوران', emoji: '🍽️' },
+            { value: 'store', label: 'فروشگاه', emoji: '🛍️' },
+            { value: 'hospital', label: 'بیمارستان', emoji: '🏥' },
+            { value: 'office', label: 'اداره', emoji: '🏢' },
+            { value: 'anywhere', label: 'هر جایی', emoji: '🌍' }
+        ]
+    }, {
+        id: 'subcategory',
+        text: 'موضوع اصلی چیست؟',
+        desc: 'دقیق‌تر بگو تا جمله مناسب‌تری پیدا کنم.',
+        options: [] // داینامیک پر می‌شود
+    }, {
+        id: 'urgency',
+        text: 'این موضوع چقدر فوری است؟',
+        desc: 'فوریت را مشخص کن تا جمله مناسب انتخاب شود.',
+        options: [
+            { value: 'normal', label: 'عادی — عجله ندارم', emoji: '😌' },
+            { value: 'urgent', label: 'فوری — امروز باید انجام بشه', emoji: '⚡' },
+            { value: 'emergency', label: 'اضطراری — الان باید اقدام کنم', emoji: '🚨' }
+        ]
+    }];
+
+    // ============================================================
+    // زیردسته‌ها بر اساس دسته
+    // ============================================================
+    const SUBCATEGORIES = {
+        home: [
+            { value: 'plumbing', label: 'لوله‌کشی و آب', emoji: '🔧' },
+            { value: 'electrical', label: 'برق و روشنایی', emoji: '💡' },
+            { value: 'cleaning', label: 'نظافت', emoji: '🧹' },
+            { value: 'food', label: 'غذا و آشپزی', emoji: '🍳' },
+            { value: 'sleep', label: 'خواب و استراحت', emoji: '😴' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        street: [
+            { value: 'directions', label: 'مسیریابی', emoji: '🗺️' },
+            { value: 'transport', label: 'حمل و نقل', emoji: '🚗' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        restaurant: [
+            { value: 'dining', label: 'سفارش و غذا', emoji: '🍽️' },
+            { value: 'complaint', label: 'شکایت', emoji: '😤' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        store: [
+            { value: 'returns', label: 'مرجوعی و تعویض', emoji: '🔄' },
+            { value: 'payment', label: 'پرداخت', emoji: '💳' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        hospital: [
+            { value: 'symptoms', label: 'علائم بیماری', emoji: '🤒' },
+            { value: 'emergency', label: 'اورژانس', emoji: '🚨' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        office: [
+            { value: 'meetings', label: 'جلسات', emoji: '🤝' },
+            { value: 'emails', label: 'ایمیل', emoji: '📧' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ],
+        anywhere: [
+            { value: 'greeting', label: 'احوالپرسی', emoji: '👋' },
+            { value: 'apology', label: 'عذرخواهی', emoji: '🙏' },
+            { value: 'help', label: 'کمک خواستن', emoji: '🆘' },
+            { value: 'emotions', label: 'احساسات', emoji: '❤️' },
+            { value: 'general', label: 'موضوعات دیگر', emoji: '📌' }
+        ]
+    };
+
+    // ============================================================
+    // ============================================================
+    // کلاس اصلی FlowPilot
+    // ============================================================
+    // ============================================================
+    class FlowPilot {
+        constructor() {
+            this.currentStep = 0;
+            this.answers = {};
+            this.totalSteps = QUESTIONS.length;
+            this.selectedChunks = [];
+            this.isEmergency = false;
+            this.isConnected = false;
+
+            // بررسی اتصال به FlowChank
+            this.checkConnection();
+
+            this.init();
+            this.setupCommunication();
+        }
+
+        // ============================================================
+        // بررسی اتصال به FlowChank
+        // ============================================================
+        checkConnection() {
+            // بررسی از طریق localStorage
+            try {
+                const data = localStorage.getItem('flowchank_data');
+                if (data) {
+                    this.isConnected = true;
+                    this.updateConnectionStatus(true);
+                } else {
+                    // منتظر پیام از FlowChank
+                    setTimeout(() => {
+                        if (!this.isConnected) {
+                            this.updateConnectionStatus(false);
+                        }
+                    }, 3000);
+                }
+            } catch {
+                this.updateConnectionStatus(false);
+            }
+        }
+
+        updateConnectionStatus(connected) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            if (connected) {
+                dot.className = 'dot connected';
+                text.textContent = 'متصل به FlowChank';
+                this.isConnected = true;
+            } else {
+                dot.className = 'dot disconnected';
+                text.textContent = '⛔ در حال انتظار برای اتصال...';
+                this.isConnected = false;
+            }
+        }
+
+        // ============================================================
+        // ارتباط دوطرفه با FlowChank
+        // ============================================================
+        setupCommunication() {
+            // دریافت پیام از FlowChank
+            window.addEventListener('message', (event) => {
+                // فقط پیام‌های از دامنه خود را قبول کن
+                if (event.data && event.data.type === 'flowchank_connected') {
+                    this.isConnected = true;
+                    this.updateConnectionStatus(true);
+                }
+
+                if (event.data && event.data.type === 'flowpilot_open') {
+                    this.reset();
+                }
+
+                if (event.data && event.data.type === 'flowchank_chunk_selected') {
+                    // نمایش پیام که چانکی در FlowChank انتخاب شده
+                    this.showToast('✅ جمله در FlowChank انتخاب شد');
+                }
+            });
+
+            // ارسال سیگنال به FlowChank که ویجت آماده است
+            setTimeout(() => {
+                window.postMessage({
+                    type: 'flowpilot_ready',
+                    source: 'flowpilot_widget'
+                }, '*');
+            }, 500);
+
+            // اتصال به localStorage برای همگام‌سازی
+            this.syncWithStorage();
+        }
+
+        // ============================================================
+        // همگام‌سازی با localStorage
+        // ============================================================
+        syncWithStorage() {
+            try {
+                // گوش دادن به تغییرات localStorage
+                window.addEventListener('storage', (e) => {
+                    if (e.key === 'flowchank_data') {
+                        this.updateConnectionStatus(true);
+                    }
+                });
+            } catch (e) {}
+        }
+
+        // ============================================================
+        // ارسال به FlowChank
+        // ============================================================
+        sendToFlowChank(chunk) {
+            // روش ۱: از طریق localStorage
+            try {
+                localStorage.setItem('flowchank_selected', JSON.stringify({
+                    eng: chunk.eng,
+                    fa: chunk.fa,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {}
+
+            // روش ۲: از طریق postMessage
+            window.postMessage({
+                type: 'flowpilot_select',
+                payload: chunk
+            }, '*');
+
+            // روش ۳: اگر FlowChank در همان صفحه است (iframe)
+            const flowFrame = document.getElementById('flowFrame');
+            if (flowFrame && flowFrame.contentWindow) {
+                flowFrame.contentWindow.postMessage({
+                    type: 'flowpilot_select',
+                    payload: chunk
+                }, '*');
+            }
+
+            this.showToast('✅ جمله به FlowChank ارسال شد');
+        }
+
+        // ============================================================
+        // نمایش پیام کوتاه (Toast)
+        // ============================================================
+        showToast(message) {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--text-primary);
+                color: white;
+                padding: 0.6rem 1.2rem;
+                border-radius: 2rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+                z-index: 999;
+                animation: fadeSlide 0.3s ease;
+                max-width: 90%;
+                text-align: center;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.4s';
+                setTimeout(() => toast.remove(), 400);
+            }, 2500);
+        }
+
+        // ============================================================
+        // مقداردهی اولیه
+        // ============================================================
+        init() {
+            this.renderStep(0);
+            this.setupEvents();
+            this.updateStepper(0);
+        }
+
+        // ============================================================
+        // رندر مرحله
+        // ============================================================
+        renderStep(step) {
+            const q = QUESTIONS[step];
+            if (!q) return;
+
+            // مخفی کردن نتیجه
+            document.getElementById('resultArea').classList.remove('visible');
+
+            // نمایش سوال
+            document.getElementById('questionArea').style.display = 'flex';
+
+            document.getElementById('qNumber').textContent = `سوال ${step + 1} از ${this.totalSteps}`;
+            document.getElementById('qText').textContent = q.text;
+            document.getElementById('qDesc').textContent = q.desc || '';
+
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+
+            // زیردسته‌ها را داینامیک پر کن
+            let options = [...q.options];
+            if (q.id === 'subcategory') {
+                const category = this.answers.category || 'anywhere';
+                options = SUBCATEGORIES[category] || SUBCATEGORIES.anywhere;
+            }
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.dataset.value = opt.value;
+                btn.innerHTML = `
+                    <span class="emoji">${opt.emoji || '📌'}</span>
+                    <span>${opt.label}</span>
+                    <span class="check"><i class="fas fa-check-circle"></i></span>
+                `;
+                btn.addEventListener('click', () => this.selectOption(step, opt.value, btn));
+                grid.appendChild(btn);
+            });
+
+            // اگر قبلاً پاسخ داده شده
+            if (this.answers[q.id]) {
+                const btns = grid.querySelectorAll('.option-btn');
+                btns.forEach(btn => {
+                    if (btn.dataset.value === this.answers[q.id]) {
+                        btn.classList.add('selected');
+                    }
+                });
+                this.checkNextButton();
+            }
+
+            this.updateStepper(step);
+        }
+
+        // ============================================================
+        // انتخاب گزینه
+        // ============================================================
+        selectOption(step, value, btn) {
+            const q = QUESTIONS[step];
+            this.answers[q.id] = value;
+
+            // هایلایت
+            const parent = btn.closest('.options-grid');
+            parent.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            // اگر زیردسته انتخاب شد و دسته تغییر کرده، ریست کن
+            if (q.id === 'category') {
+                delete this.answers.subcategory;
+            }
+
+            this.checkNextButton();
+
+            // اگر سوال آخر بود و همه پاسخ‌ها داده شد
+            if (step === this.totalSteps - 1) {
+                const allAnswered = QUESTIONS.every(q => this.answers[q.id]);
+                if (allAnswered) {
+                    document.getElementById('nextBtn').textContent = '✈️ دریافت پیشنهاد';
+                }
+            }
+        }
+
+        // ============================================================
+        // بررسی دکمه بعدی
+        // ============================================================
+        checkNextButton() {
+            const q = QUESTIONS[this.currentStep];
+            const btn = document.getElementById('nextBtn');
+            if (this.answers[q.id]) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        // ============================================================
+        // رفتن به مرحله بعد
+        // ============================================================
+        nextStep() {
+            const q = QUESTIONS[this.currentStep];
+            if (!this.answers[q.id]) return;
+
+            if (this.currentStep < this.totalSteps - 1) {
+                this.currentStep++;
+                // اگر مرحله زیردسته است و دسته مشخص نشده
+                if (QUESTIONS[this.currentStep].id === 'subcategory' && !this.answers.category) {
+                    this.answers.category = 'anywhere';
+                }
+                this.renderStep(this.currentStep);
+            } else {
+                // همه سوالات جواب داده شده → نمایش نتیجه
+                this.showResults();
+            }
+        }
+
+        // ============================================================
+        // ============================================================
+        // نمایش نتایج
+        // ============================================================
+        // ============================================================
+        showResults() {
+            // مخفی کردن سوال
+            document.getElementById('questionArea').style.display = 'none';
+
+            const resultArea = document.getElementById('resultArea');
+            resultArea.classList.add('visible');
+
+            // فیلتر کردن چانک‌ها
+            const filtered = this.filterChunks();
+            this.selectedChunks = filtered.slice(0, 3);
+
+            // محاسبه اطمینان
+            const confidence = Math.min(88 + (filtered.length > 0 ? 5 : 0), 98);
+            document.getElementById('confidenceBadge').textContent = `اطمینان ${confidence}%`;
+
+            // نمایش
+            const container = document.getElementById('resultContent');
+            container.innerHTML = '';
+
+            if (this.selectedChunks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:1.5rem; opacity:0.5;">
+                        <i class="fas fa-search" style="font-size:1.8rem;"></i>
+                        <p style="margin-top:0.3rem; font-size:0.8rem;">هیچ چانکی با این شرایط پیدا نشد.</p>
+                        <p style="font-size:0.7rem;">لطفاً تنظیمات را تغییر بده.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            this.selectedChunks.forEach((chunk, index) => {
+                const div = document.createElement('div');
+                div.className = 'chunk-item';
+                div.setAttribute('data-index', index);
+                div.innerHTML = `
+                    <div class="eng">“${chunk.eng}”</div>
+                    <div class="fa">${chunk.fa}</div>
+                    <div class="meta">
+                        <span>${chunk.category}</span>
+                        <span>${chunk.subcategory}</span>
+                        <span>فوریت: ${chunk.urgency.join('/')}</span>
+                    </div>
+                    <div class="actions">
+                        <button class="play-btn" data-eng="${chunk.eng}"><i class="fas fa-play"></i> گوش کن</button>
+                        <button class="copy-btn" data-eng="${chunk.eng}" data-fa="${chunk.fa}"><i class="fas fa-copy"></i> کپی</button>
+                        <button class="select-btn" data-index="${index}"><i class="fas fa-check-circle"></i> انتخاب</button>
+                    </div>
+                    <div class="select-hint">✨ برای انتخاب کلیک کن</div>
+                `;
+                container.appendChild(div);
+            });
+
+            // رویدادهای دکمه‌ها
+            container.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const word = btn.dataset.eng;
+                    const utterance = new SpeechSynthesisUtterance(word);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.85;
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                });
+            });
+
+            container.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const text = btn.dataset.eng + '\n' + btn.dataset.fa;
+                    navigator.clipboard.writeText(text).then(() => {
+                        btn.innerHTML = '<i class="fas fa-check"></i> کپی شد';
+                        setTimeout(() => {
+                            btn.innerHTML = '<i class="fas fa-copy"></i> کپی';
+                        }, 2000);
+                    });
+                });
+            });
+
+            container.querySelectorAll('.select-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const index = parseInt(btn.dataset.index);
+                    const chunk = this.selectedChunks[index];
+                    if (chunk) {
+                        this.sendToFlowChank(chunk);
+                        // هایلایت انتخاب
+                        const item = btn.closest('.chunk-item');
+                        item.style.borderColor = 'var(--hl-green)';
+                        item.style.background = 'rgba(42,157,143,0.06)';
+                    }
+                });
+            });
+
+            // کلیک روی کل آیتم هم انتخاب کنه
+            container.querySelectorAll('.chunk-item').forEach((item) => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.closest('.actions')) return;
+                    const index = parseInt(item.dataset.index);
+                    const chunk = this.selectedChunks[index];
+                    if (chunk) {
+                        this.sendToFlowChank(chunk);
+                        item.style.borderColor = 'var(--hl-green)';
+                        item.style.background = 'rgba(42,157,143,0.06)';
+                    }
+                });
+            });
+
+            // بروزرسانی دکمه‌ها
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').textContent = '✅ کامل شد';
+        }
+
+        // ============================================================
+        // ============================================================
+        // فیلتر کردن چانک‌ها
+        // ============================================================
+        // ============================================================
+        filterChunks() {
+            let filtered = [...CHUNKS];
+
+            // فیلتر بر اساس هدف
+            if (this.answers.intent) {
+                filtered = filtered.filter(c => c.intent === this.answers.intent);
+            }
+
+            // فیلتر بر اساس دسته
+            if (this.answers.category && this.answers.category !== 'anywhere') {
+                filtered = filtered.filter(c => c.category === this.answers.category);
+            }
+
+            // فیلتر بر اساس زیردسته
+            if (this.answers.subcategory) {
+                filtered = filtered.filter(c => c.subcategory === this.answers.subcategory);
+            }
+
+            // فیلتر بر اساس فوریت
+            if (this.answers.urgency) {
+                filtered = filtered.filter(c => c.urgency.includes(this.answers.urgency));
+            }
+
+            // اگر حالت اضطراری فعال باشد
+            if (this.isEmergency) {
+                filtered = filtered.filter(c => c.urgency.includes('emergency'));
+            }
+
+            // رتبه‌بندی
+            filtered.sort((a, b) => {
+                let scoreA = 0, scoreB = 0;
+                if (a.intent === this.answers.intent) scoreA += 10;
+                if (a.category === this.answers.category) scoreA += 5;
+                if (a.subcategory === this.answers.subcategory) scoreA += 5;
+                if (this.answers.urgency && a.urgency.includes(this.answers.urgency)) scoreA += 3;
+                if (this.isEmergency && a.urgency.includes('emergency')) scoreA += 15;
+
+                if (b.intent === this.answers.intent) scoreB += 10;
+                if (b.category === this.answers.category) scoreB += 5;
+                if (b.subcategory === this.answers.subcategory) scoreB += 5;
+                if (this.answers.urgency && b.urgency.includes(this.answers.urgency)) scoreB += 3;
+                if (this.isEmergency && b.urgency.includes('emergency')) scoreB += 15;
+
+                return scoreB - scoreA;
+            });
+
+            return filtered;
+        }
+
+        // ============================================================
+        // ============================================================
+        // بروزرسانی استپر
+        // ============================================================
+        // ============================================================
+        updateStepper(activeStep) {
+            const dots = document.querySelectorAll('.step-dot');
+            const lines = document.querySelectorAll('.step-line');
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('active', 'done');
+                if (i < activeStep) dot.classList.add('done');
+                if (i === activeStep) dot.classList.add('active');
+            });
+
+            lines.forEach((line, i) => {
+                line.classList.toggle('done', i < activeStep);
+            });
+        }
+
+        // ============================================================
+        // ============================================================
+        // ریست
+        // ============================================================
+        // ============================================================
+        reset() {
+            this.currentStep = 0;
+            this.answers = {};
+            this.selectedChunks = [];
+            this.isEmergency = false;
+
+            document.getElementById('resultArea').classList.remove('visible');
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('nextBtn').textContent = 'بعدی <i class="fas fa-arrow-left"></i>';
+
+            // ریست دکمه اضطراری
+            const emBtn = document.getElementById('emergencyBtn');
+            emBtn.textContent = '🚨 فعال‌سازی';
+            emBtn.style.opacity = '1';
+
+            // ریست استپر
+            this.updateStepper(0);
+            this.renderStep(0);
+        }
+
+        // ============================================================
+        // ============================================================
+        // حالت اضطراری
+        // ============================================================
+        // ============================================================
+        activateEmergency() {
+            this.isEmergency = true;
+            // تنظیم خودکار فوریت
+            this.answers.urgency = 'emergency';
+
+            const emBtn = document.getElementById('emergencyBtn');
+            emBtn.textContent = '🚨 فعال شد';
+            emBtn.style.opacity = '0.6';
+
+            // اگر دسته مشخص نشده، بپرس
+            if (!this.answers.category) {
+                this.currentStep = 1;
+                this.renderStep(1);
+                return;
+            }
+
+            // اگر زیردسته مشخص نشده و دسته anywhere نیست
+            if (!this.answers.subcategory && this.answers.category !== 'anywhere') {
+                this.currentStep = 2;
+                this.renderStep(2);
+                return;
+            }
+
+            // اگر همه چیز مشخصه، مستقیم نتیجه
+            this.showResults();
+        }
+
+        // ============================================================
+        // ============================================================
+        // رویدادها
+        // ============================================================
+        // ============================================================
+        setupEvents() {
+            // دکمه بعدی
+            document.getElementById('nextBtn').addEventListener('click', () => this.nextStep());
+
+            // دکمه ریست
+            document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+            document.getElementById('retryBtn').addEventListener('click', () => this.reset());
+
+            // دکمه استفاده (ارسال به FlowChank)
+            document.getElementById('useBtn').addEventListener('click', () => {
+                if (this.selectedChunks.length > 0) {
+                    this.sendToFlowChank(this.selectedChunks[0]);
+                }
+            });
+
+            // دکمه اضطراری
+            document.getElementById('emergencyBtn').addEventListener('click', () => {
+                if (confirm('⚠️ آیا مطمئنی وضعیت اضطراری است؟')) {
+                    this.activateEmergency();
+                }
+            });
+
+            // دکمه بستن
+            document.getElementById('closeBtn').addEventListener('click', () => {
+                if (confirm('آیا می‌خواهی FlowPilot را ببندی؟')) {
+                    window.close();
+                }
+            });
+
+            // کیبورد: Enter برای ادامه
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const btn = document.getElementById('nextBtn');
+                    if (!btn.disabled) btn.click();
+                }
+                if (e.key === 'Escape') {
+                    document.getElementById('closeBtn').click();
+                }
+            });
+        }
+    }
+
+    // ============================================================
+    // ============================================================
+    // راه‌اندازی
+    // ============================================================
+    // ============================================================
+    const pilot = new FlowPilot();
+
+    // اکسپوز برای استفاده از FlowChank
+    window.FlowPilot = pilot;
+
+    console.log('✈️ FlowPilot · خلبان گفتار');
+    console.log('📋 چانک‌های موجود:', CHUNKS.length);
+    console.log('💡 برای استفاده: FlowPilot.reset()');
+    console.log('🚨 برای اضطراری: FlowPilot.activateEmergency()');
+    console.log('📡 در انتظار اتصال به FlowChank...');
+</script>
+
+</body>
+</html>
