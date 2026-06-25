@@ -65,7 +65,7 @@
         }
 
         /* ============================================================
-           HEADER (بدون دکمه +)
+           HEADER با دکمه FlowPilot و تم
            ============================================================ */
         .header {
             background: var(--glass);
@@ -94,6 +94,13 @@
         }
         .menu-btn:hover { transform: scale(1.02); background: var(--accent-dark); }
         .logo-img { height: 45px; filter: drop-shadow(0 4px 10px rgba(255,105,180,0.3)); }
+
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
         .theme-toggle {
             background: rgba(255,255,240,0.15);
             border: 1px solid var(--border);
@@ -113,6 +120,27 @@
             color: white;
             border-color: var(--accent);
             transform: scale(1.05);
+        }
+
+        /* دکمه FlowPilot با رنگ خاص */
+        .flowpilot-btn {
+            background: linear-gradient(135deg, #3a86ff, #7c3a8a);
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: white;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(58, 134, 255, 0.25);
+        }
+        .flowpilot-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(58, 134, 255, 0.35);
         }
 
         /* ============================================================
@@ -478,22 +506,31 @@
             .sidebar { width: 280px; }
             .main-container { padding: 1rem; }
             .category-title { font-size: 0.95rem; }
+            .header-actions { gap: 0.3rem; }
+            .theme-toggle, .flowpilot-btn { width: 36px; height: 36px; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
 
 <!-- ============================================================
-HEADER (بدون دکمه +)
+HEADER با دکمه FlowPilot و تم
 ============================================================ -->
 <div class="header">
     <div class="logo-area">
         <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
         <img class="logo-img" src="https://uploadkon.ir/uploads/c56f11_26Polish-۲۰۲۶۰۶۱۱-۱۲۴۸۱۶۹۹۲.png" alt="FluentChunk">
     </div>
-    <button id="themeToggle" class="theme-toggle" aria-label="تغییر تم">
-        <i class="fas fa-moon" id="themeIcon"></i>
-    </button>
+    <div class="header-actions">
+        <!-- دکمه FlowPilot (خلبان گفتار) -->
+        <button id="flowPilotBtn" class="flowpilot-btn" title="خلبان گفتار">
+            <i class="fas fa-plane"></i>
+        </button>
+        <!-- دکمه تم شب/روز -->
+        <button id="themeToggle" class="theme-toggle" aria-label="تغییر تم">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+    </div>
 </div>
 
 <!-- ============================================================
@@ -583,10 +620,11 @@ SIDEBAR با لینک‌های هایپرلینک
 اسکریپت
 ============================================================ -->
 <script>
-// ======================= ساختار چانک‌ها (نمونه) =======================
-// ⚠️ اینجا فقط چند نمونه برای تست قرار داده شده.
-// شما می‌توانید چانک‌های کامل خود را در این بخش جایگزین کنید.
-
+// ============================================================
+// ============================================================
+// ⚠️ بخش محتوای چانک‌ها — محتوای خود را اینجا جایگزین کنید
+// ============================================================
+// ============================================================
 const categoriesHierarchy = [
     {
         id: 1,
@@ -692,8 +730,11 @@ const categoriesHierarchy = [
     }
 ];
 
-
-// ======================= متغیرهای اصلی =======================
+// ============================================================
+// ============================================================
+// متغیرهای اصلی و منطق برنامه
+// ============================================================
+// ============================================================
 let currentStack = [];
 let currentSelected = null;
 let currentSelectedCard = null;
@@ -724,11 +765,15 @@ function flattenPhrases(node, path = []) {
 }
 
 // جمع‌آوری اولیه
-categoriesHierarchy.forEach(cat => {
-    allFlatPhrases.push(...flattenPhrases(cat, [cat.name]));
-});
+if (categoriesHierarchy.length > 0) {
+    categoriesHierarchy.forEach(cat => {
+        allFlatPhrases.push(...flattenPhrases(cat, [cat.name]));
+    });
+}
 
-// ======================= توابع نمایش =======================
+// ============================================================
+// توابع نمایش
+// ============================================================
 function showContent(title, items, isPhrases = false, breadcrumbText = '') {
     const container = document.getElementById('contentContainer');
     const backBtn = document.getElementById('backBtn');
@@ -877,7 +922,9 @@ function attachAudioEvents() {
     });
 }
 
-// ======================= جستجو =======================
+// ============================================================
+// جستجو
+// ============================================================
 function searchGlobal(query) {
     if (!query.trim()) {
         showMainPage();
@@ -892,7 +939,9 @@ function searchGlobal(query) {
     showContent(`نتایج جستجو`, results, true, `<i class="fas fa-search"></i> جستجو: ${query}`);
 }
 
-// ======================= ساخت منوی درختی =======================
+// ============================================================
+// ساخت منوی درختی
+// ============================================================
 function buildTreeMenu() {
     const container = document.getElementById('treeMenu');
     container.innerHTML = '';
@@ -987,7 +1036,9 @@ function selectPhraseDirectly(eng, fa) {
     document.getElementById('selectedLabel').innerHTML = `✅ “${eng.substring(0, 35)}...”`;
 }
 
-// ======================= ضبط صدا =======================
+// ============================================================
+// ضبط صدا
+// ============================================================
 async function startRecording() {
     if (!currentSelected) { alert('ابتدا روی یک عبارت کلیک کنید'); return; }
     if (isRecording) return;
@@ -1031,7 +1082,47 @@ async function startRecording() {
 function stopRecording() { if (mediaRecorder && isRecording && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); }
 function playRecording() { const audio = document.getElementById('recAudio'); if (audio.src) audio.play(); }
 
-// ======================= راه‌اندازی =======================
+// ============================================================
+// ============================================================
+// اتصال FlowPilot به FlowChank
+// ============================================================
+// ============================================================
+
+// ۱. دریافت جمله از FlowPilot
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'flowpilot_select') {
+        const chunk = event.data.payload;
+        // انتخاب جمله در FlowChank
+        if (typeof selectPhrase === 'function') {
+            const fakeCard = document.createElement('div');
+            selectPhrase(fakeCard, chunk.eng, chunk.fa);
+            if (fakeCard) fakeCard.remove();
+        }
+        // ذخیره در localStorage برای همگام‌سازی
+        localStorage.setItem('flowchank_selected', JSON.stringify(chunk));
+        console.log('✅ جمله از FlowPilot:', chunk.eng);
+    }
+    
+    if (event.data && event.data.type === 'flowpilot_ready') {
+        // ارسال سیگنال به FlowPilot که FlowChank آماده است
+        if (event.source) {
+            event.source.postMessage({
+                type: 'flowchank_connected'
+            }, '*');
+        }
+    }
+});
+
+// ۲. تابع باز کردن FlowPilot
+function openFlowPilot() {
+    window.open('B/index.html', 'FlowPilot', 'width=480,height=680,scrollbars=yes,resizable=yes');
+}
+
+// ============================================================
+// ============================================================
+// راه‌اندازی
+// ============================================================
+// ============================================================
 function closeMenu() {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('overlay').classList.remove('active');
@@ -1043,20 +1134,30 @@ document.getElementById('menuBtn').onclick = () => {
 };
 document.getElementById('closeSidebar').onclick = closeMenu;
 document.getElementById('overlay').onclick = closeMenu;
+
+// دکمه تم
 document.getElementById('themeToggle').onclick = () => {
     document.body.classList.toggle('dark');
     const icon = document.getElementById('themeIcon');
     if (document.body.classList.contains('dark')) {
-        icon.className = 'fas fa-sun'; // حالت شب → خورشید
+        icon.className = 'fas fa-sun';
     } else {
-        icon.className = 'fas fa-moon'; // حالت روز → ماه
+        icon.className = 'fas fa-moon';
     }
 };
+
+// دکمه FlowPilot
+document.getElementById('flowPilotBtn').onclick = openFlowPilot;
+
+// دکمه‌های ضبط
 document.getElementById('startRecBtn').onclick = startRecording;
 document.getElementById('stopRecBtn').onclick = stopRecording;
 document.getElementById('playRecBtn').onclick = playRecording;
+
+// دکمه برگشت
 document.getElementById('backBtn').onclick = goBack;
 
+// جستجو
 const searchInputElem = document.getElementById('searchInput');
 searchInputElem.addEventListener('input', (e) => searchGlobal(e.target.value));
 document.getElementById('clearSearch').onclick = () => {
@@ -1064,57 +1165,13 @@ document.getElementById('clearSearch').onclick = () => {
     showMainPage();
 };
 
+// ساخت منو و نمایش
 buildTreeMenu();
 showMainPage();
 
-console.log('✅ FlowChunk Pro با منوی لینک‌های جدید راه‌اندازی شد!');
-
-    // ============================================================
-// اتصال FlowPilot به FlowChank
-// ============================================================
-
-// ۱. دریافت جمله از FlowPilot
-window.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'flowpilot_select') {
-        const chunk = event.data.payload;
-        // انتخاب جمله در FlowChank
-        if (typeof selectPhrase === 'function') {
-            // اگر تابع selectPhrase وجود دارد
-            const fakeCard = document.createElement('div');
-            selectPhrase(fakeCard, chunk.eng, chunk.fa);
-            if (fakeCard) fakeCard.remove();
-        }
-        // ذخیره در localStorage
-        localStorage.setItem('flowchank_selected', JSON.stringify(chunk));
-        // نمایش پیام
-        console.log('✅ جمله از FlowPilot:', chunk.eng);
-    }
-    
-    if (event.data && event.data.type === 'flowpilot_ready') {
-        // ارسال سیگنال به FlowPilot که FlowChank آماده است
-        event.source.postMessage({
-            type: 'flowchank_connected'
-        }, '*');
-    }
-});
-
-// ۲. تابع باز کردن FlowPilot
-function openFlowPilot() {
-    // باز کردن به صورت پنجره جدید
-    window.open('B/index.html', 'FlowPilot', 'width=450,height=650,scrollbars=yes');
-}
-
-// ۳. اضافه کردن دکمه به هدر FlowChank
-// این کد رو در بخش هدر اضافه کنید:
-/*
-<button id="flowPilotBtn" class="theme-toggle" title="خلبان گفتار">
-    <i class="fas fa-plane"></i>
-</button>
-
-<script>
-document.getElementById('flowPilotBtn').onclick = openFlowPilot;
-</script>
-*/
+console.log('✅ FlowChunk Pro با دکمه FlowPilot راه‌اندازی شد!');
+console.log('✈️ برای باز کردن FlowPilot روی دکمه هواپیما کلیک کنید.');
+console.log('📋 تعداد چانک‌های بارگذاری شده:', allFlatPhrases.length);
 </script>
 
 </body>
