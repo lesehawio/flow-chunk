@@ -1068,6 +1068,53 @@ buildTreeMenu();
 showMainPage();
 
 console.log('✅ FlowChunk Pro با منوی لینک‌های جدید راه‌اندازی شد!');
+
+    // ============================================================
+// اتصال FlowPilot به FlowChank
+// ============================================================
+
+// ۱. دریافت جمله از FlowPilot
+window.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'flowpilot_select') {
+        const chunk = event.data.payload;
+        // انتخاب جمله در FlowChank
+        if (typeof selectPhrase === 'function') {
+            // اگر تابع selectPhrase وجود دارد
+            const fakeCard = document.createElement('div');
+            selectPhrase(fakeCard, chunk.eng, chunk.fa);
+            if (fakeCard) fakeCard.remove();
+        }
+        // ذخیره در localStorage
+        localStorage.setItem('flowchank_selected', JSON.stringify(chunk));
+        // نمایش پیام
+        console.log('✅ جمله از FlowPilot:', chunk.eng);
+    }
+    
+    if (event.data && event.data.type === 'flowpilot_ready') {
+        // ارسال سیگنال به FlowPilot که FlowChank آماده است
+        event.source.postMessage({
+            type: 'flowchank_connected'
+        }, '*');
+    }
+});
+
+// ۲. تابع باز کردن FlowPilot
+function openFlowPilot() {
+    // باز کردن به صورت پنجره جدید
+    window.open('B/index.html', 'FlowPilot', 'width=450,height=650,scrollbars=yes');
+}
+
+// ۳. اضافه کردن دکمه به هدر FlowChank
+// این کد رو در بخش هدر اضافه کنید:
+/*
+<button id="flowPilotBtn" class="theme-toggle" title="خلبان گفتار">
+    <i class="fas fa-plane"></i>
+</button>
+
+<script>
+document.getElementById('flowPilotBtn').onclick = openFlowPilot;
+</script>
+*/
 </script>
 
 </body>
