@@ -65,7 +65,7 @@
         }
 
         /* ============================================================
-           HEADER با دکمه FlowPilot و تم
+           HEADER - کاملاً ساده (فقط لوگو، منو، تم)
            ============================================================ */
         .header {
             background: var(--glass);
@@ -122,51 +122,6 @@
             transform: scale(1.05);
         }
 
-     /* ============================================================
-        دکمه FlowPilot با لوگو
-        ============================================================ */
-        .flowpilot-btn {
-            background: transparent;
-            border: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px;
-        }
-
-        .flowpilot-btn:hover {
-            transform: scale(1.08);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .flowpilot-icon {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-            transition: all 0.3s ease;
-            /* حالت عادی: مشکی */
-            filter: brightness(0) saturate(100%) invert(0);
-        }
-
-        /* حالت تاریک: سفید */
-        body.dark .flowpilot-icon {
-            filter: brightness(0) saturate(100%) invert(1);
-        }
-
-        /* ریسپانسیو */
-        @media(max-width:600px){
-            .flowpilot-btn {
-                width: 36px;
-                height: 36px;
-                padding: 4px;
-            }
-        }
         /* ============================================================
            جستجو
            ============================================================ */
@@ -205,7 +160,7 @@
         .clear-search:hover { background: var(--accent-dark); }
 
         /* ============================================================
-           منوی کناری با لینک‌ها
+           منوی کناری با لینک‌ها (شامل FlowPilot)
            ============================================================ */
         .sidebar {
             position: fixed;
@@ -236,9 +191,7 @@
         }
         .overlay.active { display: block; }
 
-        /* ============================================================
-           لینک‌های منوی کناری
-           ============================================================ */
+        /* لینک‌های منوی کناری */
         .menu-links {
             margin-bottom: 0.5rem;
         }
@@ -256,6 +209,7 @@
             transition: all 0.2s ease;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid transparent;
+            cursor: pointer;
         }
 
         .menu-link:hover {
@@ -288,9 +242,7 @@
             background: rgba(176, 124, 255, 0.08);
         }
 
-        /* ============================================================
-           استایل درخت منو
-           ============================================================ */
+        /* استایل درخت منو */
         .tree-node { margin-bottom: 0.2rem; }
         .tree-header {
             font-weight: 600;
@@ -366,9 +318,7 @@
         }
         .breadcrumb span { color: var(--accent); }
 
-        /* ============================================================
-           کارت‌ها
-           ============================================================ */
+        /* کارت‌ها */
         .phrases-grid {
             display: flex;
             flex-direction: column;
@@ -431,9 +381,7 @@
         }
         .audio-btn:hover { transform: scale(1.05); }
 
-        /* ============================================================
-           حالت ضبط
-           ============================================================ */
+        /* ضبط صدا */
         body.recording-mode .main-container,
         body.recording-mode .search-area,
         body.recording-mode .header {
@@ -472,9 +420,6 @@
             50% { transform: translate(-50%, -50%) scale(1.03); opacity: 1; }
         }
 
-        /* ============================================================
-           نوار ضبط
-           ============================================================ */
         .record-bar {
             background: var(--glass-heavy);
             backdrop-filter: blur(32px);
@@ -531,14 +476,14 @@
             .main-container { padding: 1rem; }
             .category-title { font-size: 0.95rem; }
             .header-actions { gap: 0.3rem; }
-            .theme-toggle, .flowpilot-btn { width: 36px; height: 36px; font-size: 0.9rem; }
+            .theme-toggle { width: 36px; height: 36px; font-size: 0.9rem; }
         }
     </style>
 </head>
 <body>
 
 <!-- ============================================================
-HEADER با دکمه FlowPilot و تم
+HEADER - کاملاً ساده
 ============================================================ -->
 <div class="header">
     <div class="logo-area">
@@ -546,15 +491,6 @@ HEADER با دکمه FlowPilot و تم
         <img class="logo-img" src="https://uploadkon.ir/uploads/c56f11_26Polish-۲۰۲۶۰۶۱۱-۱۲۴۸۱۶۹۹۲.png" alt="FluentChunk">
     </div>
     <div class="header-actions">
-        <!-- دکمه FlowPilot (خلبان گفتار) -->
-<!-- دکمه FlowPilot با لوگو -->
-<button id="flowPilotBtn" class="flowpilot-btn" title="خلبان گفتار">
-    <img src="https://uploadkon.ir/uploads/757425_26Screenshot-2026-06-25-142910222.png" 
-         alt="FlowPilot" 
-         class="flowpilot-icon"
-         id="flowPilotIcon">
-</button>
-        <!-- دکمه تم شب/روز -->
         <button id="themeToggle" class="theme-toggle" aria-label="تغییر تم">
             <i class="fas fa-moon" id="themeIcon"></i>
         </button>
@@ -603,16 +539,24 @@ HEADER با دکمه FlowPilot و تم
 <div class="recording-hint" id="recordingHint">🎙️ در حال ضبط... از حفظ و بدون نگاه کردن بگو!</div>
 
 <!-- ============================================================
-SIDEBAR با لینک‌های هایپرلینک
+SIDEBAR با لینک FlowPilot
 ============================================================ -->
 <aside id="sidebar" class="sidebar">
     <div style="display: flex; justify-content: flex-start; margin-bottom: 1.2rem;">
         <button id="closeSidebar" style="background:none; border:none; font-size:0.85rem; cursor:pointer; color:var(--text);"><i class="fas fa-times-circle"></i> بستن منو</button>
     </div>
     
-    <!-- ====== بخش لینک‌های سریع ====== -->
     <div class="menu-links">
         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+            
+            <!-- ============================================================
+            🔴 دکمه FlowPilot در منو (به جای هدر)
+            ============================================================ -->
+            <a id="flowPilotMenuLink" class="menu-link" title="خلبان گفتار" style="cursor:pointer;">
+                <i class="fas fa-plane"></i> خلبان گفتار
+                <span class="link-badge">جدید</span>
+            </a>
+            
             <a href="A/index.html" class="menu-link" title="رفتن به پوشه A">
                 <i class="fas fa-plus-circle"></i> سیستم پلاس
                 <span class="link-badge">جدید</span>
@@ -637,7 +581,6 @@ SIDEBAR با لینک‌های هایپرلینک
             </a>
         </div>
     </div>
-    <!-- ====== پایان بخش لینک‌ها ====== -->
     
     <div id="treeMenu"></div>
 </aside>
@@ -650,11 +593,15 @@ SIDEBAR با لینک‌های هایپرلینک
 <script>
 // ============================================================
 // ============================================================
-// ⚠️ بخش محتوای چانک‌ها — محتوای خود را اینجا جایگزین کنید
+// 🔴 بخش ۱: داده‌های چانک‌ها (محتوای خود را جایگزین کنید)
 // ============================================================
 // ============================================================
 const categoriesHierarchy = [
-    {
+    // ============================================================
+    // 🔴 محتوای چانک‌های خود را اینجا قرار دهید
+    // ============================================================
+    // مثال (چند نمونه برای ساختار):
+        {
         id: 1,
         name: " زندگی روزمره (بقا و راحتی)",
         icon: "fa-house-chimney",
@@ -760,20 +707,19 @@ const categoriesHierarchy = [
 
 // ============================================================
 // ============================================================
-// متغیرهای اصلی و منطق برنامه
+// 🔴 بخش ۲: منطق اصلی
 // ============================================================
 // ============================================================
+
 let currentStack = [];
 let currentSelected = null;
 let currentSelectedCard = null;
 let mediaRecorder, audioChunks = [], isRecording = false, mediaStream = null;
 let allFlatPhrases = [];
 
-// جمع‌آوری همه عبارات به صورت flat برای جستجو
 function flattenPhrases(node, path = []) {
     let results = [];
     const currentPath = [...path, node.name];
-    
     if (node.phrases) {
         node.phrases.forEach(p => {
             results.push({
@@ -792,12 +738,9 @@ function flattenPhrases(node, path = []) {
     return results;
 }
 
-// جمع‌آوری اولیه
-if (categoriesHierarchy.length > 0) {
-    categoriesHierarchy.forEach(cat => {
-        allFlatPhrases.push(...flattenPhrases(cat, [cat.name]));
-    });
-}
+categoriesHierarchy.forEach(cat => {
+    allFlatPhrases.push(...flattenPhrases(cat, [cat.name]));
+});
 
 // ============================================================
 // توابع نمایش
@@ -805,13 +748,11 @@ if (categoriesHierarchy.length > 0) {
 function showContent(title, items, isPhrases = false, breadcrumbText = '') {
     const container = document.getElementById('contentContainer');
     const backBtn = document.getElementById('backBtn');
-    
     if (items.length === 0) {
         container.innerHTML = `<div style="text-align:center; padding:3rem; opacity:0.6;">🔍 چیزی یافت نشد</div>`;
     } else {
         container.innerHTML = `<div class="phrases-grid" id="contentGrid"></div>`;
         const grid = document.getElementById('contentGrid');
-        
         items.forEach(item => {
             const card = document.createElement('div');
             if (isPhrases) {
@@ -849,7 +790,6 @@ function showContent(title, items, isPhrases = false, breadcrumbText = '') {
             grid.appendChild(card);
         });
     }
-    
     document.getElementById('breadcrumb').innerHTML = breadcrumbText || title;
     backBtn.style.display = currentStack.length > 0 ? 'flex' : 'none';
     attachAudioEvents();
@@ -859,13 +799,11 @@ function navigateTo(item, newStack) {
     currentStack = newStack;
     const backBtn = document.getElementById('backBtn');
     backBtn.style.display = currentStack.length > 0 ? 'flex' : 'none';
-    
     let breadcrumbHtml = '';
     currentStack.forEach((node, idx) => {
         breadcrumbHtml += `<i class="fas ${idx === 0 ? 'fa-home' : 'fa-chevron-left'}" style="font-size:0.6rem;"></i> <span>${node.name}</span> `;
     });
     document.getElementById('breadcrumb').innerHTML = breadcrumbHtml;
-    
     if (item.phrases) {
         const itemsToShow = item.phrases.map(p => ({
             ...p,
@@ -973,32 +911,25 @@ function searchGlobal(query) {
 function buildTreeMenu() {
     const container = document.getElementById('treeMenu');
     container.innerHTML = '';
-    
     categoriesHierarchy.forEach(cat => {
         const catNode = document.createElement('div');
         catNode.className = 'tree-node';
-        
         const header = document.createElement('div');
         header.className = 'tree-header';
         header.innerHTML = `<i class="fas fa-chevron-left"></i><i class="fas ${cat.icon} node-icon"></i> ${cat.name}`;
-        
         const childrenDiv = document.createElement('div');
         childrenDiv.className = 'tree-children';
-        
         function addChildren(parentNode, parentDiv, level = 0) {
             if (parentNode.children) {
                 parentNode.children.forEach(child => {
                     const childDiv = document.createElement('div');
                     childDiv.className = 'tree-node';
-                    
                     const childHeader = document.createElement('div');
                     childHeader.className = 'tree-header';
                     childHeader.style.paddingRight = `${(level + 1) * 8}px`;
                     childHeader.innerHTML = `<i class="fas fa-chevron-left"></i><i class="fas fa-folder node-icon"></i> ${child.name}`;
-                    
                     const childChildrenDiv = document.createElement('div');
                     childChildrenDiv.className = 'tree-children';
-                    
                     if (child.children) {
                         addChildren(child, childChildrenDiv, level + 1);
                     } else if (child.phrases) {
@@ -1018,7 +949,6 @@ function buildTreeMenu() {
                             childChildrenDiv.appendChild(leaf);
                         });
                     }
-                    
                     let isOpen = false;
                     childHeader.onclick = (e) => {
                         e.stopPropagation();
@@ -1027,7 +957,6 @@ function buildTreeMenu() {
                         const icon = childHeader.querySelector('i:first-child');
                         if (icon) icon.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-left';
                     };
-                    
                     if (child.children || child.phrases) {
                         childDiv.appendChild(childHeader);
                         childDiv.appendChild(childChildrenDiv);
@@ -1039,9 +968,7 @@ function buildTreeMenu() {
                 });
             }
         }
-        
         addChildren(cat, childrenDiv, 0);
-        
         let isOpen = false;
         header.onclick = (e) => {
             e.stopPropagation();
@@ -1050,7 +977,6 @@ function buildTreeMenu() {
             const icon = header.querySelector('i:first-child');
             if (icon) icon.className = isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-left';
         };
-        
         catNode.appendChild(header);
         catNode.appendChild(childrenDiv);
         container.appendChild(catNode);
@@ -1070,12 +996,10 @@ function selectPhraseDirectly(eng, fa) {
 async function startRecording() {
     if (!currentSelected) { alert('ابتدا روی یک عبارت کلیک کنید'); return; }
     if (isRecording) return;
-    
     document.body.classList.add('recording-mode');
     document.getElementById('visualizer').style.display = 'inline-flex';
     document.getElementById('recordingHint').style.display = 'block';
     document.getElementById('selectedLabel').innerHTML = '🔴 در حال ضبط...';
-    
     audioChunks = [];
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1112,7 +1036,7 @@ function playRecording() { const audio = document.getElementById('recAudio'); if
 
 // ============================================================
 // ============================================================
-// اتصال FlowPilot به FlowChank
+// 🔴 اتصال FlowPilot از طریق منو (نه هدر)
 // ============================================================
 // ============================================================
 
@@ -1120,19 +1044,15 @@ function playRecording() { const audio = document.getElementById('recAudio'); if
 window.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'flowpilot_select') {
         const chunk = event.data.payload;
-        // انتخاب جمله در FlowChank
         if (typeof selectPhrase === 'function') {
             const fakeCard = document.createElement('div');
             selectPhrase(fakeCard, chunk.eng, chunk.fa);
             if (fakeCard) fakeCard.remove();
         }
-        // ذخیره در localStorage برای همگام‌سازی
         localStorage.setItem('flowchank_selected', JSON.stringify(chunk));
         console.log('✅ جمله از FlowPilot:', chunk.eng);
     }
-    
     if (event.data && event.data.type === 'flowpilot_ready') {
-        // ارسال سیگنال به FlowPilot که FlowChank آماده است
         if (event.source) {
             event.source.postMessage({
                 type: 'flowchank_connected'
@@ -1163,21 +1083,19 @@ document.getElementById('menuBtn').onclick = () => {
 document.getElementById('closeSidebar').onclick = closeMenu;
 document.getElementById('overlay').onclick = closeMenu;
 
-// دکمه تم
+// دکمه تم - فقط ماه/خورشید
 document.getElementById('themeToggle').onclick = () => {
     document.body.classList.toggle('dark');
     const icon = document.getElementById('themeIcon');
-    
-    if (document.body.classList.contains('dark')) {
-        icon.className = 'fas fa-sun';
-    } else {
-        icon.className = 'fas fa-moon';
-    }
-    // لوگو به‌طور خودکار با CSS تغییر می‌کند
+    icon.className = document.body.classList.contains('dark') ? 'fas fa-sun' : 'fas fa-moon';
 };
 
-// دکمه FlowPilot
-document.getElementById('flowPilotBtn').onclick = openFlowPilot;
+// 🔴 دکمه FlowPilot در منو (نه هدر)
+document.getElementById('flowPilotMenuLink').onclick = (e) => {
+    e.preventDefault();
+    closeMenu();
+    setTimeout(openFlowPilot, 300);
+};
 
 // دکمه‌های ضبط
 document.getElementById('startRecBtn').onclick = startRecording;
@@ -1199,9 +1117,9 @@ document.getElementById('clearSearch').onclick = () => {
 buildTreeMenu();
 showMainPage();
 
-console.log('✅ FlowChunk Pro با دکمه FlowPilot راه‌اندازی شد!');
-console.log('✈️ برای باز کردن FlowPilot روی دکمه هواپیما کلیک کنید.');
+console.log('✅ FlowChunk Pro - نسخه ساده با دکمه FlowPilot در منو');
 console.log('📋 تعداد چانک‌های بارگذاری شده:', allFlatPhrases.length);
+console.log('✈️ برای باز کردن FlowPilot: منو → خلبان گفتار');
 </script>
 
 </body>
